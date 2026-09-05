@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest'
 
 import { persistenciaEmMemoria } from '@/registro-local/memoria'
 import { criarRegistroLocal } from '@/registro-local/registro-local'
+import type { Atendimento } from '@/registro-local/tipos'
 
 const NOMES_SEMENTE = [
   'Abordagem de rua',
@@ -11,6 +12,14 @@ const NOMES_SEMENTE = [
   'Atendimento psicossocial',
   'Outro',
 ]
+
+function atendimentoBase(parcial: Partial<Atendimento> & { id: string }): Atendimento {
+  return {
+    atividadeId: 'plantao',
+    criadoEm: '2026-01-01T00:00:00.000Z',
+    ...parcial,
+  }
+}
 
 describe('RegistroLocal', () => {
   test('na primeira abertura com catálogo vazio existem as seis Atividades semente', async () => {
@@ -194,7 +203,7 @@ describe('RegistroLocal', () => {
       cpf: '52998224725',
     })
 
-    expect(await registro.indicadores()).toEqual({ totalAtendimentos: 2 })
+    expect((await registro.indicadores()).totalAtendimentos).toBe(2)
   })
 
   test('Atendimento aponta para a Atividade pela identidade do cadastro auxiliar', async () => {
@@ -528,6 +537,187 @@ describe('RegistroLocal', () => {
     await registro.criarAtividade('Plantão da casa')
     expect((await registro.listarAtividades()).map((atividade) => atividade.nome)).toEqual([
       'Plantão da casa',
+    ])
+  })
+
+  test('sem Atendimento os Indicadores ficam no estado vazio, sem recorte quebrado', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    await registro.listarAtividades()
+
+    expect(await registro.indicadores()).toEqual({
+      totalAtendimentos: 0,
+      porAtividade: [],
+      porRacaCor: [],
+      porEscolaridade: [],
+      porFaixaRenda: [],
+      porFaixaEtaria: [],
+      porSituacaoRua: [],
+      porUsoSubstancias: [],
+      porCidade: [],
+    })
+  })
+
+  test('Atendimento anônimo entra no total e os campos vazios viram Não informado', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    const [atividade] = await registro.listarAtividades()
+    await registro.criarAtendimento({ atividadeId: atividade.id })
+    await registro.criarAtendimento({ atividadeId: atividade.id })
+
+    const naoInformado = { chave: 'Não informado', quantidade: 2 }
+    expect(await registro.indicadores()).toEqual({
+      totalAtendimentos: 2,
+      porAtividade: [{ chave: atividade.nome, quantidade: 2 }],
+      porRacaCor: [naoInformado],
+      porEscolaridade: [naoInformado],
+      porFaixaRenda: [naoInformado],
+      porFaixaEtaria: [naoInformado],
+      porSituacaoRua: [naoInformado],
+      porUsoSubstancias: [naoInformado],
+      porCidade: [naoInformado],
+    })
+  })
+
+  test('faixa etária deriva da data de nascimento e nascimento futuro cai em Não informado', async () => {
+    const registro = criarRegistroLocal(
+      persistenciaEmMemoria(
+        [
+          {
+            id: 'plantao',
+            nome: 'Plantão',
+            criadaEm: '2026-01-01T00:00:00.000Z',
+            atualizadaEm: '2026-01-01T00:00:00.000Z',
+          },
+        ],
+        [
+          atendimentoBase({ id: 'crianca', dataNascimento: '2020-01-15' }),
+          atendimentoBase({ id: 'adolescente', dataNascimento: '2012-01-15' }),
+          atendimentoBase({ id: 'jovem', dataNascimento: '2000-01-15' }),
+          atendimentoBase({ id: 'adulto', dataNascimento: '1980-01-15' }),
+          atendimentoBase({ id: 'idoso', dataNascimento: '1950-01-15' }),
+          atendimentoBase({ id: 'futuro', dataNascimento: '2099-01-01' }),
+          atendimentoBase({ id: 'sem-data' }),
+        ],
+      ),
+    )
+
+    expect((await registro.indicadores()).porFaixaEtaria).toEqual([
+      { chave: '0–11', quantidade: 1 },
+      { chave: '12–17', quantidade: 1 },
+      { chave: '18–29', quantidade: 1 },
+      { chave: '30–59', quantidade: 1 },
+      { chave: '60+', quantidade: 1 },
+      { chave: 'Não informado', quantidade: 2 },
+    ])
+  })
+
+  test('filtro recorta Indicadores por uma Atividade e Atividade sem linha fica vazia', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    const [rua, abrigo] = await registro.listarAtividades()
+    await registro.criarAtendimento({
+      atividadeId: rua.id,
+      racaCor: 'parda',
+      cidade: 'Canoas',
+    })
+    await registro.criarAtendimento({
+      atividadeId: abrigo.id,
+      racaCor: 'branca',
+      cidade: 'Porto Alegre',
+    })
+    const semMovimento = await registro.criarAtividade('Mutirão novo')
+
+    expect(await registro.indicadores()).toMatchObject({
+      totalAtendimentos: 2,
+      porAtividade: [
+        { chave: rua.nome, quantidade: 1 },
+        { chave: abrigo.nome, quantidade: 1 },
+      ],
+      porRacaCor: [
+        { chave: 'branca', quantidade: 1 },
+        { chave: 'parda', quantidade: 1 },
+      ],
+      porCidade: [
+        { chave: 'Canoas', quantidade: 1 },
+        { chave: 'Porto Alegre', quantidade: 1 },
+      ],
+    })
+    expect(await registro.indicadores({ atividadeId: rua.id })).toMatchObject({
+      totalAtendimentos: 1,
+      porAtividade: [{ chave: rua.nome, quantidade: 1 }],
+      porRacaCor: [{ chave: 'parda', quantidade: 1 }],
+      porCidade: [{ chave: 'Canoas', quantidade: 1 }],
+    })
+    expect(await registro.indicadores({ atividadeId: semMovimento.id })).toEqual({
+      totalAtendimentos: 0,
+      porAtividade: [],
+      porRacaCor: [],
+      porEscolaridade: [],
+      porFaixaRenda: [],
+      porFaixaEtaria: [],
+      porSituacaoRua: [],
+      porUsoSubstancias: [],
+      porCidade: [],
+    })
+  })
+
+  test('Nome, CPF e bairro não entram nos Indicadores nem como categoria', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    const [atividade] = await registro.listarAtividades()
+    await registro.criarAtendimento({
+      atividadeId: atividade.id,
+      nome: 'Maria Silva',
+      cpf: '529.982.247-25',
+      bairro: 'Mathias Velho',
+      cidade: 'Canoas',
+    })
+
+    const indicadores = await registro.indicadores()
+    const texto = JSON.stringify(indicadores)
+    expect(texto).not.toContain('Maria Silva')
+    expect(texto).not.toContain('52998224725')
+    expect(texto).not.toContain('Mathias Velho')
+    expect(indicadores.porCidade).toEqual([{ chave: 'Canoas', quantidade: 1 }])
+  })
+
+  test('renomear Atividade atualiza a chave do recorte por Atividade', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    const criada = await registro.criarAtividade('Mutirão')
+    await registro.criarAtendimento({ atividadeId: criada.id })
+
+    await registro.renomearAtividade(criada.id, 'Mutirão de cobertores')
+
+    expect((await registro.indicadores()).porAtividade).toEqual([
+      { chave: 'Mutirão de cobertores', quantidade: 1 },
+    ])
+  })
+
+  test('recorte fecha escolaridade, renda, situação de rua e uso de substâncias', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    const [atividade] = await registro.listarAtividades()
+    await registro.criarAtendimento({
+      atividadeId: atividade.id,
+      escolaridade: 'médio completo',
+      faixaRenda: '1–2',
+      situacaoRua: 'não',
+      usoSubstancias: 'álcool',
+    })
+    await registro.criarAtendimento({ atividadeId: atividade.id })
+
+    const indicadores = await registro.indicadores()
+    expect(indicadores.porEscolaridade).toEqual([
+      { chave: 'médio completo', quantidade: 1 },
+      { chave: 'Não informado', quantidade: 1 },
+    ])
+    expect(indicadores.porFaixaRenda).toEqual([
+      { chave: '1–2', quantidade: 1 },
+      { chave: 'Não informado', quantidade: 1 },
+    ])
+    expect(indicadores.porSituacaoRua).toEqual([
+      { chave: 'não', quantidade: 1 },
+      { chave: 'Não informado', quantidade: 1 },
+    ])
+    expect(indicadores.porUsoSubstancias).toEqual([
+      { chave: 'álcool', quantidade: 1 },
+      { chave: 'Não informado', quantidade: 1 },
     ])
   })
 })

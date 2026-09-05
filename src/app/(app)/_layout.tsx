@@ -46,6 +46,16 @@ export default function LayoutApp() {
         }}
       />
       <Tabs.Screen
+        name="graficos"
+        options={{
+          title: copia.graficosTitulo,
+          tabBarLabel: copia.graficosAba,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="bar-chart-outline" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="atividades"
         options={{
           title: copia.atividadesTitulo,

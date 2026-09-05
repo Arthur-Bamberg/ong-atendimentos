@@ -61,4 +61,12 @@ export const copia = {
   novoAtendimento: 'Novo atendimento',
   atendimentoGravado: 'Atendimento gravado neste aparelho.',
   naoInformado: 'Não informado',
+  graficosTitulo: 'Gráficos',
+  graficosAba: 'Gráficos',
+  todasAtividades: 'Todas as Atividades',
+  filtroAtividade: 'Filtrar por Atividade',
+  faixaEtaria: 'Faixa etária',
+  graficosVazio:
+    'Ainda não há Atendimento neste recorte neste aparelho. Os gráficos aparecem quando houver pelo menos uma linha.',
+  erroGraficos: 'Não foi possível carregar os Indicadores neste aparelho.',
 }

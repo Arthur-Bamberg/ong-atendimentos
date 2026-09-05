@@ -18,6 +18,7 @@ export const OPCOES_FAIXA_RENDA = [
 ] as const
 export const OPCOES_SITUACAO_RUA = ['sim', 'não'] as const
 export const OPCOES_USO_SUBSTANCIAS = ['não', 'álcool', 'outras drogas', 'ambos'] as const
+export const FAIXAS_ETARIAS = ['0–11', '12–17', '18–29', '30–59', '60+'] as const
 
 export type RacaCor = (typeof OPCOES_RACA_COR)[number]
 export type Escolaridade = (typeof OPCOES_ESCOLARIDADE)[number]
@@ -64,8 +65,25 @@ export type NovoAtendimento = {
   dataDoAtendimento?: string
 }
 
+export type Bucket = {
+  chave: string
+  quantidade: number
+}
+
+export type FiltroIndicadores = {
+  atividadeId?: string
+}
+
 export type Indicadores = {
   totalAtendimentos: number
+  porAtividade: Bucket[]
+  porRacaCor: Bucket[]
+  porEscolaridade: Bucket[]
+  porFaixaRenda: Bucket[]
+  porFaixaEtaria: Bucket[]
+  porSituacaoRua: Bucket[]
+  porUsoSubstancias: Bucket[]
+  porCidade: Bucket[]
 }
 
 export type Persistencia = {
@@ -88,5 +106,5 @@ export type RegistroLocal = {
   criarAtendimento(dados: NovoAtendimento): Promise<Atendimento>
   listarAtendimentos(): Promise<Atendimento[]>
   obterAtendimento(id: string): Promise<Atendimento | null>
-  indicadores(): Promise<Indicadores>
+  indicadores(filtro?: FiltroIndicadores): Promise<Indicadores>
 }

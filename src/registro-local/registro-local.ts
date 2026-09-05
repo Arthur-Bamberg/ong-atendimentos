@@ -1,4 +1,18 @@
-import type { Atendimento, Atividade, Persistencia, RegistroLocal } from '@/registro-local/tipos'
+import {
+  FAIXAS_ETARIAS,
+  OPCOES_ESCOLARIDADE,
+  OPCOES_FAIXA_RENDA,
+  OPCOES_RACA_COR,
+  OPCOES_SITUACAO_RUA,
+  OPCOES_USO_SUBSTANCIAS,
+  type Atendimento,
+  type Atividade,
+  type Bucket,
+  type Persistencia,
+  type RegistroLocal,
+} from '@/registro-local/tipos'
+
+const NAO_INFORMADO = 'Não informado'
 
 const NOMES_SEMENTE = [
   'Abordagem de rua',
@@ -45,6 +59,68 @@ function dataLocalHoje(): string {
   const mes = String(agora.getMonth() + 1).padStart(2, '0')
   const dia = String(agora.getDate()).padStart(2, '0')
   return `${agora.getFullYear()}-${mes}-${dia}`
+}
+
+function bucketsDe(valores: (string | undefined)[], ordem?: readonly string[]): Bucket[] {
+  if (valores.length === 0) {
+    return []
+  }
+  const mapa = new Map<string, number>()
+  for (const valor of valores) {
+    const chave = valor?.trim() ? valor : NAO_INFORMADO
+    mapa.set(chave, (mapa.get(chave) ?? 0) + 1)
+  }
+  const conhecidas =
+    ordem?.filter((chave) => mapa.has(chave)) ??
+    [...mapa.keys()].filter((chave) => chave !== NAO_INFORMADO)
+  const extras = ordem
+    ? [...mapa.keys()].filter((chave) => chave !== NAO_INFORMADO && !ordem.includes(chave))
+    : []
+  const buckets = [...conhecidas, ...extras].map((chave) => ({
+    chave,
+    quantidade: mapa.get(chave) ?? 0,
+  }))
+  const naoInformado = mapa.get(NAO_INFORMADO)
+  if (naoInformado) {
+    buckets.push({ chave: NAO_INFORMADO, quantidade: naoInformado })
+  }
+  return buckets
+}
+
+function idadeEmAnos(nascimento: string, hoje: string): number | undefined {
+  const [anoNasc, mesNasc, diaNasc] = nascimento.split('-').map(Number)
+  const [anoHoje, mesHoje, diaHoje] = hoje.split('-').map(Number)
+  if (!anoNasc || !mesNasc || !diaNasc || !anoHoje || !mesHoje || !diaHoje) {
+    return undefined
+  }
+  let idade = anoHoje - anoNasc
+  if (mesHoje < mesNasc || (mesHoje === mesNasc && diaHoje < diaNasc)) {
+    idade -= 1
+  }
+  return idade
+}
+
+function faixaEtaria(dataNascimento: string | undefined, hoje: string): string | undefined {
+  if (!dataNascimento || dataNascimento > hoje) {
+    return undefined
+  }
+  const idade = idadeEmAnos(dataNascimento, hoje)
+  if (idade === undefined || idade < 0) {
+    return undefined
+  }
+  if (idade <= 11) {
+    return '0–11'
+  }
+  if (idade <= 17) {
+    return '12–17'
+  }
+  if (idade <= 29) {
+    return '18–29'
+  }
+  if (idade <= 59) {
+    return '30–59'
+  }
+  return '60+'
 }
 
 function dataNascimentoCanonico(valor: string | undefined): string | undefined {
@@ -173,9 +249,46 @@ export function criarRegistroLocal(persistencia: Persistencia): RegistroLocal {
       const atendimentos = await persistencia.carregarAtendimentos()
       return atendimentos.find((atendimento) => atendimento.id === id) ?? null
     },
-    async indicadores() {
-      const atendimentos = await persistencia.carregarAtendimentos()
-      return { totalAtendimentos: atendimentos.length }
+    async indicadores(filtro) {
+      const todos = await persistencia.carregarAtendimentos()
+      const atendimentos = filtro?.atividadeId
+        ? todos.filter((atendimento) => atendimento.atividadeId === filtro.atividadeId)
+        : todos
+      const atividades = await persistencia.carregarAtividades()
+      const nomePorId = new Map(atividades.map((atividade) => [atividade.id, atividade.nome]))
+      return {
+        totalAtendimentos: atendimentos.length,
+        porAtividade: bucketsDe(
+          atendimentos.map((atendimento) => nomePorId.get(atendimento.atividadeId)),
+        ),
+        porRacaCor: bucketsDe(
+          atendimentos.map((atendimento) => atendimento.racaCor),
+          OPCOES_RACA_COR,
+        ),
+        porEscolaridade: bucketsDe(
+          atendimentos.map((atendimento) => atendimento.escolaridade),
+          OPCOES_ESCOLARIDADE,
+        ),
+        porFaixaRenda: bucketsDe(
+          atendimentos.map((atendimento) => atendimento.faixaRenda),
+          OPCOES_FAIXA_RENDA,
+        ),
+        porFaixaEtaria: bucketsDe(
+          atendimentos.map((atendimento) =>
+            faixaEtaria(atendimento.dataNascimento, dataLocalHoje()),
+          ),
+          FAIXAS_ETARIAS,
+        ),
+        porSituacaoRua: bucketsDe(
+          atendimentos.map((atendimento) => atendimento.situacaoRua),
+          OPCOES_SITUACAO_RUA,
+        ),
+        porUsoSubstancias: bucketsDe(
+          atendimentos.map((atendimento) => atendimento.usoSubstancias),
+          OPCOES_USO_SUBSTANCIAS,
+        ),
+        porCidade: bucketsDe(atendimentos.map((atendimento) => atendimento.cidade)),
+      }
     },
   }
 }
