@@ -1,65 +1,66 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
-import '@/global.css'
-
 import { Platform } from 'react-native'
 
 export const Colors = {
   light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
+    background: '#F8FAFC',
+    foreground: '#1E293B',
+    card: '#FFFFFF',
+    cardForeground: '#1E293B',
+    muted: '#E9EFF8',
+    mutedForeground: '#475569',
+    border: '#E2E8F0',
+    primary: '#2563EB',
+    onPrimary: '#FFFFFF',
+    accent: '#EA580C',
+    onAccent: '#000000',
+    destructive: '#DC2626',
+    onDestructive: '#FFFFFF',
+    ring: '#2563EB',
   },
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
+    background: '#0F172A',
+    foreground: '#F1F5F9',
+    card: '#1E293B',
+    cardForeground: '#F1F5F9',
+    muted: '#334155',
+    mutedForeground: '#CBD5E1',
+    border: '#475569',
+    primary: '#2563EB',
+    onPrimary: '#FFFFFF',
+    accent: '#FB923C',
+    onAccent: '#000000',
+    destructive: '#F87171',
+    onDestructive: '#000000',
+    ring: '#60A5FA',
   },
 } as const
 
-export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark
+export type ThemeTokens = (typeof Colors)[keyof typeof Colors]
+export type SurfaceName = 'background' | 'card' | 'muted'
+export type TextTone = 'foreground' | 'mutedForeground' | 'primary' | 'destructive'
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
-  },
-})
+export const Fonts = {
+  heading: 'Outfit_600SemiBold',
+  headingBold: 'Outfit_700Bold',
+  body: 'WorkSans_400Regular',
+  bodyMedium: 'WorkSans_500Medium',
+  bodySemi: 'WorkSans_600SemiBold',
+} as const
 
 export const Spacing = {
-  half: 2,
-  one: 4,
-  two: 8,
-  three: 16,
-  four: 24,
-  five: 32,
-  six: 64,
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  xxl: 48,
 } as const
 
-export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0
-export const MaxContentWidth = 800
+export const Radius = {
+  sm: 8,
+  md: 12,
+} as const
+
+export const MinTouch = Platform.select({ ios: 44, android: 48, default: 48 }) ?? 48
+export const MaxContentWidth = 560
+export const MotionMs = 150

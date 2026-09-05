@@ -3,6 +3,7 @@ import { ActivityIndicator, StyleSheet } from 'react-native'
 
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
+import { useTheme } from '@/hooks/use-theme'
 import { abrirBaseNesteAparelho } from '@/infra/base-neste-aparelho'
 import type { FachadaNesteAparelho } from '@/infra/tipos-base'
 import { criarRegistroLocal } from '@/registro-local/registro-local'
@@ -17,6 +18,7 @@ type BaseLocalContexto = {
 const Contexto = createContext<BaseLocalContexto | null>(null)
 
 export function BaseLocalProvider({ children }: { children: ReactNode }) {
+  const theme = useTheme()
   const [contexto, setContexto] = useState<BaseLocalContexto | null>(null)
   const [erro, setErro] = useState<string | null>(null)
 
@@ -47,7 +49,7 @@ export function BaseLocalProvider({ children }: { children: ReactNode }) {
   if (erro) {
     return (
       <ThemedView style={styles.centralizado}>
-        <ThemedText>{erro}</ThemedText>
+        <ThemedText tone="destructive">{erro}</ThemedText>
       </ThemedView>
     )
   }
@@ -55,10 +57,8 @@ export function BaseLocalProvider({ children }: { children: ReactNode }) {
   if (!contexto) {
     return (
       <ThemedView style={styles.centralizado}>
-        <ActivityIndicator />
-        <ThemedText type="small" themeColor="textSecondary">
-          {copia.carregando}
-        </ThemedText>
+        <ActivityIndicator color={theme.primary} accessibilityLabel={copia.carregando} />
+        <ThemedText tone="mutedForeground">{copia.carregando}</ThemedText>
       </ThemedView>
     )
   }

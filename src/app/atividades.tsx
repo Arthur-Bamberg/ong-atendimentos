@@ -3,13 +3,15 @@ import { ActivityIndicator, StyleSheet } from 'react-native'
 
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
-import { Spacing } from '@/constants/theme'
+import { Radius, Spacing } from '@/constants/theme'
+import { useTheme } from '@/hooks/use-theme'
 import type { Atividade } from '@/registro-local/tipos'
 import { useBaseLocal } from '@/ui/base-local-provider'
 import { copia } from '@/ui/copia'
-import { Tela } from '@/ui/tela'
+import { AvisoAparelho, Tela } from '@/ui/tela'
 
 export default function TelaAtividades() {
+  const theme = useTheme()
   const { registro } = useBaseLocal()
   const [atividades, setAtividades] = useState<Atividade[] | null>(null)
   const [erro, setErro] = useState<string | null>(null)
@@ -36,7 +38,7 @@ export default function TelaAtividades() {
   if (erro) {
     return (
       <Tela>
-        <ThemedText>{erro}</ThemedText>
+        <ThemedText tone="destructive">{erro}</ThemedText>
       </Tela>
     )
   }
@@ -44,17 +46,23 @@ export default function TelaAtividades() {
   if (!atividades) {
     return (
       <Tela>
-        <ActivityIndicator />
+        <ActivityIndicator color={theme.primary} accessibilityLabel={copia.carregando} />
       </Tela>
     )
   }
 
   return (
     <Tela>
-      <ThemedText type="subtitle">{copia.atividadesTitulo}</ThemedText>
-      <ThemedText themeColor="textSecondary">{copia.avisoCatalogo}</ThemedText>
+      <ThemedText type="title" accessibilityRole="header">
+        {copia.atividadesTitulo}
+      </ThemedText>
+      <AvisoAparelho texto={copia.avisoCatalogo} />
       {atividades.map((atividade) => (
-        <ThemedView key={atividade.id} type="backgroundElement" style={styles.item}>
+        <ThemedView
+          key={atividade.id}
+          surface="card"
+          style={[styles.item, { borderColor: theme.border }]}
+        >
           <ThemedText>{atividade.nome}</ThemedText>
         </ThemedView>
       ))}
@@ -64,7 +72,9 @@ export default function TelaAtividades() {
 
 const styles = StyleSheet.create({
   item: {
-    padding: Spacing.three,
-    borderRadius: 8,
+    padding: Spacing.md,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    gap: Spacing.xs,
   },
 })

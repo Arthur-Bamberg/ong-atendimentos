@@ -3,9 +3,11 @@ import { useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet } from 'react-native'
 
 import { ThemedView } from '@/components/themed-view'
+import { useTheme } from '@/hooks/use-theme'
 import { useBaseLocal } from '@/ui/base-local-provider'
 
 export default function PortaDeEntrada() {
+  const theme = useTheme()
   const { fachada } = useBaseLocal()
   const [destino, setDestino] = useState<'/atividades' | '/login' | null>(null)
 
@@ -31,7 +33,7 @@ export default function PortaDeEntrada() {
   if (!destino) {
     return (
       <ThemedView style={styles.centralizado}>
-        <ActivityIndicator />
+        <ActivityIndicator color={theme.primary} />
       </ThemedView>
     )
   }

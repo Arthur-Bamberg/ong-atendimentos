@@ -10,9 +10,11 @@ export default function TelaNaoEncontrada() {
     <>
       <Stack.Screen options={{ title: 'Não encontrado' }} />
       <ThemedView style={styles.container}>
-        <ThemedText type="subtitle">Tela não encontrada</ThemedText>
+        <ThemedText type="title" accessibilityRole="header">
+          Tela não encontrada
+        </ThemedText>
         <Link href="/">
-          <ThemedText type="linkPrimary">Voltar</ThemedText>
+          <ThemedText type="link">Voltar</ThemedText>
         </Link>
       </ThemedView>
     </>
@@ -24,7 +26,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: Spacing.three,
-    padding: Spacing.four,
+    gap: Spacing.md,
+    padding: Spacing.lg,
   },
 })
