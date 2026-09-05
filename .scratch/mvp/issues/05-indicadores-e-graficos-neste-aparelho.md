@@ -1,0 +1,16 @@
+# 05: Indicadores e gráficos neste aparelho
+
+**What to build:** o Operador vê um dashboard com o total de Atendimentos neste aparelho (incluindo anônimos, nunca “atendidos”), os oito recortes, fatia “Não informado”, filtro por uma Atividade ou todas, e o mesmo informativo do form. Nome, CPF e bairro ficam fora dos gráficos. Sem filtro de período.
+
+**Blocked by:** 04: Formulário único completo, detalhe e novo atendimento
+
+**Status:** ready-for-agent
+
+- [ ] O número grande é o total de Atendimentos neste aparelho, incluindo anônimos, rotulado Atendimentos — nunca “atendidos”
+- [ ] O mesmo informativo do form aparece nos gráficos (anônimo e reincidência não são pessoas distintas)
+- [ ] Há recortes de Atendimentos por: Atividade, raça/cor, escolaridade, faixa de renda, faixa etária (0–11, 12–17, 18–29, 30–59, 60+ derivada da data de nascimento), situação de rua, uso de substâncias, cidade
+- [ ] Bairro não tem gráfico próprio; Nome e CPF nunca entram em gráfico nem como categoria
+- [ ] Cada recorte inclui fatia/barra “Não informado” quando o campo (ou a data de nascimento, na idade) está vazio
+- [ ] Há filtro no dashboard para todas as Atividades ou uma Atividade; o recorte é all-time neste aparelho, sem período
+- [ ] Sem linhas correspondentes (por exemplo Atividade nova sem Atendimento) aparece estado vazio, não gráfico quebrado
+- [ ] Data de nascimento no futuro não gera faixa etária negativa (cai em vazio / Não informado, alinhado ao form)
