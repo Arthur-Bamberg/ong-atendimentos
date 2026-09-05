@@ -395,6 +395,128 @@ describe('RegistroLocal', () => {
     ).toBe(false)
   })
 
+  test('recusa gravar Atendimento com CPF inválido e não cria a linha', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    const [atividade] = await registro.listarAtividades()
+
+    await expect(
+      registro.criarAtendimento({
+        atividadeId: atividade.id,
+        cpf: '111.111.111-11',
+      }),
+    ).rejects.toThrow('CPF inválido')
+    expect(await registro.listarAtendimentos()).toHaveLength(0)
+  })
+
+  test('CPF vazio continua válido no Atendimento anônimo', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    const [atividade] = await registro.listarAtividades()
+
+    const gravado = await registro.criarAtendimento({
+      atividadeId: atividade.id,
+      cpf: '',
+    })
+
+    expect(gravado.cpf).toBeUndefined()
+    expect(await registro.obterAtendimento(gravado.id)).toEqual(gravado)
+  })
+
+  test('CPF com pontuação diferente guarda o mesmo valor só com dígitos', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    const [atividade] = await registro.listarAtividades()
+
+    const comMascara = await registro.criarAtendimento({
+      atividadeId: atividade.id,
+      cpf: '529.982.247-25',
+    })
+    const semMascara = await registro.criarAtendimento({
+      atividadeId: atividade.id,
+      cpf: '52998224725',
+    })
+
+    expect(comMascara.cpf).toBe('52998224725')
+    expect(semMascara.cpf).toBe('52998224725')
+    expect(await registro.listarAtendimentos()).toHaveLength(2)
+  })
+
+  test('grava os campos opcionais independentemente e o detalhe lê o que foi salvo', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    const [atividade] = await registro.listarAtividades()
+
+    const completo = await registro.criarAtendimento({
+      atividadeId: atividade.id,
+      nome: 'Maria',
+      cpf: '529.982.247-25',
+      dataNascimento: '1990-05-17',
+      racaCor: 'parda',
+      escolaridade: 'médio completo',
+      faixaRenda: '1–2',
+      cidade: 'Canoas',
+      bairro: 'Centro',
+      situacaoRua: 'não',
+      usoSubstancias: 'álcool',
+      dataDoAtendimento: '2026-03-10',
+    })
+    const soCidade = await registro.criarAtendimento({
+      atividadeId: atividade.id,
+      cidade: 'Porto Alegre',
+    })
+
+    expect(await registro.obterAtendimento(completo.id)).toMatchObject({
+      nome: 'Maria',
+      cpf: '52998224725',
+      dataNascimento: '1990-05-17',
+      racaCor: 'parda',
+      escolaridade: 'médio completo',
+      faixaRenda: '1–2',
+      cidade: 'Canoas',
+      bairro: 'Centro',
+      situacaoRua: 'não',
+      usoSubstancias: 'álcool',
+      dataDoAtendimento: '2026-03-10',
+    })
+    expect(soCidade.cidade).toBe('Porto Alegre')
+    expect(soCidade.nome).toBeUndefined()
+    expect(soCidade.racaCor).toBeUndefined()
+    expect(soCidade.dataDoAtendimento).toBeUndefined()
+  })
+
+  test('recusa data de nascimento no futuro', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    const [atividade] = await registro.listarAtividades()
+
+    await expect(
+      registro.criarAtendimento({
+        atividadeId: atividade.id,
+        dataNascimento: '2099-01-01',
+      }),
+    ).rejects.toThrow('Data de nascimento no futuro não entra')
+    expect(await registro.listarAtendimentos()).toHaveLength(0)
+  })
+
+  test('data do atendimento no passado não muda a ordem da lista, que continua pela criação', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    const [atividade] = await registro.listarAtividades()
+
+    const primeiro = await registro.criarAtendimento({
+      atividadeId: atividade.id,
+      nome: 'Primeiro',
+      dataDoAtendimento: '2020-01-01',
+    })
+    const segundo = await registro.criarAtendimento({
+      atividadeId: atividade.id,
+      nome: 'Segundo',
+      dataDoAtendimento: '2019-01-01',
+    })
+
+    expect((await registro.listarAtendimentos()).map((atendimento) => atendimento.id)).toEqual([
+      segundo.id,
+      primeiro.id,
+    ])
+    expect(primeiro.dataDoAtendimento).toBe('2020-01-01')
+    expect(segundo.dataDoAtendimento).toBe('2019-01-01')
+  })
+
   test('apagar até zerar o catálogo não traz as sementes de volta', async () => {
     const registro = criarRegistroLocal(persistenciaEmMemoria())
     const iniciais = await registro.listarAtividades()

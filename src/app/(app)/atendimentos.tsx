@@ -5,7 +5,7 @@ import { ActivityIndicator } from 'react-native'
 import { ThemedText } from '@/components/themed-text'
 import { useTheme } from '@/hooks/use-theme'
 import type { Atendimento, Atividade } from '@/registro-local/tipos'
-import { formatarInstante, nomeDaAtividade, nomeDoAtendimento } from '@/ui/atendimento'
+import { dataVisivelDoAtendimento, nomeDaAtividade, nomeDoAtendimento } from '@/ui/atendimento'
 import { useBaseLocal } from '@/ui/base-local-provider'
 import { copia } from '@/ui/copia'
 import { BotaoPrincipal, LinhaPressionavel, Tela } from '@/ui/tela'
@@ -73,7 +73,7 @@ export default function TelaAtendimentos() {
         atendimentos.map((atendimento) => {
           const atividade = nomeDaAtividade(atividades, atendimento.atividadeId)
           const nome = nomeDoAtendimento(atendimento)
-          const instante = formatarInstante(atendimento.criadoEm)
+          const instante = dataVisivelDoAtendimento(atendimento)
           return (
             <LinhaPressionavel
               key={atendimento.id}

@@ -1,12 +1,14 @@
 import { Ionicons } from '@expo/vector-icons'
-import { type ReactNode } from 'react'
+import { type ReactNode, useState } from 'react'
 import {
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
+  TextInput,
   View,
   type PressableProps,
+  type TextInputProps,
 } from 'react-native'
 import { SafeAreaView, type Edges } from 'react-native-safe-area-context'
 
@@ -111,6 +113,16 @@ export function LinhaPressionavel({
 }
 
 export function AvisoAparelho({ texto }: { texto: string }) {
+  return <Aviso icone="phone-portrait-outline" texto={texto} />
+}
+
+export function Aviso({
+  icone = 'information-circle-outline',
+  texto,
+}: {
+  icone?: keyof typeof Ionicons.glyphMap
+  texto: string
+}) {
   const theme = useTheme()
 
   return (
@@ -120,7 +132,7 @@ export function AvisoAparelho({ texto }: { texto: string }) {
       accessibilityRole="text"
     >
       <Ionicons
-        name="phone-portrait-outline"
+        name={icone}
         size={22}
         color={theme.primary}
         accessibilityElementsHidden
@@ -130,6 +142,71 @@ export function AvisoAparelho({ texto }: { texto: string }) {
         {texto}
       </ThemedText>
     </ThemedView>
+  )
+}
+
+export function CampoTexto({
+  rotulo,
+  ...rest
+}: TextInputProps & { rotulo: string; value: string }) {
+  const theme = useTheme()
+  const [foco, setFoco] = useState(false)
+
+  return (
+    <>
+      <ThemedText type="label">{rotulo}</ThemedText>
+      <TextInput
+        {...rest}
+        accessibilityLabel={rest.accessibilityLabel ?? rotulo}
+        onBlur={(evento) => {
+          setFoco(false)
+          rest.onBlur?.(evento)
+        }}
+        onFocus={(evento) => {
+          setFoco(true)
+          rest.onFocus?.(evento)
+        }}
+        placeholderTextColor={theme.mutedForeground}
+        style={[
+          styles.campo,
+          {
+            color: theme.foreground,
+            backgroundColor: theme.card,
+            borderColor: foco ? theme.ring : theme.border,
+            minHeight: MinTouch,
+          },
+          rest.style,
+        ]}
+      />
+    </>
+  )
+}
+
+export function EscolhaFechada<T extends string>({
+  rotulo,
+  opcoes,
+  valor,
+  onChange,
+}: {
+  rotulo: string
+  opcoes: readonly T[]
+  valor: T | ''
+  onChange: (valor: T | '') => void
+}) {
+  return (
+    <>
+      <ThemedText type="label">{rotulo}</ThemedText>
+      {opcoes.map((opcao) => (
+        <LinhaPressionavel
+          key={opcao}
+          accessibilityLabel={opcao}
+          onPress={() => onChange(valor === opcao ? '' : opcao)}
+          selecionada={valor === opcao}
+        >
+          <ThemedText>{opcao}</ThemedText>
+        </LinhaPressionavel>
+      ))}
+    </>
   )
 }
 
@@ -188,5 +265,13 @@ const styles = StyleSheet.create({
   },
   avisoTexto: {
     flex: 1,
+  },
+  campo: {
+    borderWidth: 1,
+    borderRadius: Radius.sm,
+    paddingHorizontal: Spacing.md,
+    fontFamily: Fonts.body,
+    fontSize: 16,
+    lineHeight: 24,
   },
 })

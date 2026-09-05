@@ -1,7 +1,16 @@
 import * as SQLite from 'expo-sqlite'
 
 import type { BaseNesteAparelho, FachadaNesteAparelho } from '@/infra/tipos-base'
-import type { Atendimento, Atividade, Persistencia } from '@/registro-local/tipos'
+import type {
+  Atendimento,
+  Atividade,
+  Escolaridade,
+  FaixaRenda,
+  Persistencia,
+  RacaCor,
+  SituacaoRua,
+  UsoSubstancias,
+} from '@/registro-local/tipos'
 
 type LinhaAtividade = {
   id: string
@@ -15,12 +24,33 @@ type LinhaAtendimento = {
   atividade_id: string
   nome: string | null
   cpf: string | null
+  data_nascimento: string | null
+  raca_cor: string | null
+  escolaridade: string | null
+  faixa_renda: string | null
+  cidade: string | null
+  bairro: string | null
+  situacao_rua: string | null
+  uso_substancias: string | null
+  data_do_atendimento: string | null
   criado_em: string
 }
 
 type LinhaPreferencia = {
   valor: string
 }
+
+const COLUNAS_ATENDIMENTO = [
+  ['data_nascimento', 'TEXT'],
+  ['raca_cor', 'TEXT'],
+  ['escolaridade', 'TEXT'],
+  ['faixa_renda', 'TEXT'],
+  ['cidade', 'TEXT'],
+  ['bairro', 'TEXT'],
+  ['situacao_rua', 'TEXT'],
+  ['uso_substancias', 'TEXT'],
+  ['data_do_atendimento', 'TEXT'],
+] as const
 
 export async function abrirBaseNesteAparelho(): Promise<BaseNesteAparelho> {
   const db = await SQLite.openDatabaseAsync('base-local.db')
@@ -44,6 +74,7 @@ export async function abrirBaseNesteAparelho(): Promise<BaseNesteAparelho> {
       criado_em TEXT NOT NULL
     );
   `)
+  await garantirColunasAtendimento(db)
 
   const persistencia: Persistencia = {
     async carregarAtividades() {
@@ -88,7 +119,9 @@ export async function abrirBaseNesteAparelho(): Promise<BaseNesteAparelho> {
     },
     async carregarAtendimentos() {
       const linhas = await db.getAllAsync<LinhaAtendimento>(
-        'SELECT id, atividade_id, nome, cpf, criado_em FROM atendimentos ORDER BY rowid',
+        `SELECT id, atividade_id, nome, cpf, data_nascimento, raca_cor, escolaridade, faixa_renda,
+                cidade, bairro, situacao_rua, uso_substancias, data_do_atendimento, criado_em
+         FROM atendimentos ORDER BY rowid`,
       )
       return linhas.map(atendimentoDaLinha)
     },
@@ -97,11 +130,23 @@ export async function abrirBaseNesteAparelho(): Promise<BaseNesteAparelho> {
         await txn.runAsync('DELETE FROM atendimentos')
         for (const atendimento of atendimentos) {
           await txn.runAsync(
-            'INSERT INTO atendimentos (id, atividade_id, nome, cpf, criado_em) VALUES (?, ?, ?, ?, ?)',
+            `INSERT INTO atendimentos (
+               id, atividade_id, nome, cpf, data_nascimento, raca_cor, escolaridade, faixa_renda,
+               cidade, bairro, situacao_rua, uso_substancias, data_do_atendimento, criado_em
+             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             atendimento.id,
             atendimento.atividadeId,
             atendimento.nome ?? null,
             atendimento.cpf ?? null,
+            atendimento.dataNascimento ?? null,
+            atendimento.racaCor ?? null,
+            atendimento.escolaridade ?? null,
+            atendimento.faixaRenda ?? null,
+            atendimento.cidade ?? null,
+            atendimento.bairro ?? null,
+            atendimento.situacaoRua ?? null,
+            atendimento.usoSubstancias ?? null,
+            atendimento.dataDoAtendimento ?? null,
             atendimento.criadoEm,
           )
         }
@@ -138,12 +183,39 @@ export async function abrirBaseNesteAparelho(): Promise<BaseNesteAparelho> {
   return { persistencia, fachada }
 }
 
+async function garantirColunasAtendimento(db: SQLite.SQLiteDatabase) {
+  const colunas = await db.getAllAsync<{ name: string }>('PRAGMA table_info(atendimentos)')
+  const nomes = new Set(colunas.map((coluna) => coluna.name))
+  for (const [nome, tipo] of COLUNAS_ATENDIMENTO) {
+    if (!nomes.has(nome)) {
+      await db.execAsync(`ALTER TABLE atendimentos ADD COLUMN ${nome} ${tipo}`)
+    }
+  }
+}
+
+function opcional(valor: string | null): string | undefined {
+  return valor ? valor : undefined
+}
+
 function atendimentoDaLinha(linha: LinhaAtendimento): Atendimento {
   return {
     id: linha.id,
     atividadeId: linha.atividade_id,
     criadoEm: linha.criado_em,
-    ...(linha.nome ? { nome: linha.nome } : {}),
-    ...(linha.cpf ? { cpf: linha.cpf } : {}),
+    ...(opcional(linha.nome) ? { nome: linha.nome as string } : {}),
+    ...(opcional(linha.cpf) ? { cpf: linha.cpf as string } : {}),
+    ...(opcional(linha.data_nascimento) ? { dataNascimento: linha.data_nascimento as string } : {}),
+    ...(opcional(linha.raca_cor) ? { racaCor: linha.raca_cor as RacaCor } : {}),
+    ...(opcional(linha.escolaridade) ? { escolaridade: linha.escolaridade as Escolaridade } : {}),
+    ...(opcional(linha.faixa_renda) ? { faixaRenda: linha.faixa_renda as FaixaRenda } : {}),
+    ...(opcional(linha.cidade) ? { cidade: linha.cidade as string } : {}),
+    ...(opcional(linha.bairro) ? { bairro: linha.bairro as string } : {}),
+    ...(opcional(linha.situacao_rua) ? { situacaoRua: linha.situacao_rua as SituacaoRua } : {}),
+    ...(opcional(linha.uso_substancias)
+      ? { usoSubstancias: linha.uso_substancias as UsoSubstancias }
+      : {}),
+    ...(opcional(linha.data_do_atendimento)
+      ? { dataDoAtendimento: linha.data_do_atendimento as string }
+      : {}),
   }
 }

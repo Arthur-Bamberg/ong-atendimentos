@@ -9,6 +9,55 @@ const NOMES_SEMENTE = [
   'Outro',
 ] as const
 
+function cpfCanonico(cpf: string | undefined): string | undefined {
+  const digitos = cpf?.replace(/\D/g, '') ?? ''
+  if (!digitos) {
+    return undefined
+  }
+  if (!cpfValido(digitos)) {
+    throw new Error('CPF inválido')
+  }
+  return digitos
+}
+
+function cpfValido(digitos: string): boolean {
+  if (digitos.length !== 11 || /^(\d)\1{10}$/.test(digitos)) {
+    return false
+  }
+  const dv = (base: number) => {
+    let soma = 0
+    for (let indice = 0; indice < base; indice += 1) {
+      soma += Number(digitos[indice]) * (base + 1 - indice)
+    }
+    const resto = (soma * 10) % 11
+    return resto === 10 ? 0 : resto
+  }
+  return dv(9) === Number(digitos[9]) && dv(10) === Number(digitos[10])
+}
+
+function textoOpcional(valor: string | undefined): string | undefined {
+  const limpo = valor?.trim()
+  return limpo ? limpo : undefined
+}
+
+function dataLocalHoje(): string {
+  const agora = new Date()
+  const mes = String(agora.getMonth() + 1).padStart(2, '0')
+  const dia = String(agora.getDate()).padStart(2, '0')
+  return `${agora.getFullYear()}-${mes}-${dia}`
+}
+
+function dataNascimentoCanonico(valor: string | undefined): string | undefined {
+  const data = textoOpcional(valor)
+  if (!data) {
+    return undefined
+  }
+  if (data > dataLocalHoje()) {
+    throw new Error('Data de nascimento no futuro não entra')
+  }
+  return data
+}
+
 export function criarRegistroLocal(persistencia: Persistencia): RegistroLocal {
   async function catalogo() {
     const existentes = await persistencia.carregarAtividades()
@@ -90,12 +139,27 @@ export function criarRegistroLocal(persistencia: Persistencia): RegistroLocal {
       if (!atividadeId || !atividades.some((atividade) => atividade.id === atividadeId)) {
         throw new Error('Atendimento precisa de uma Atividade')
       }
+      const cpf = cpfCanonico(dados.cpf)
+      const nome = textoOpcional(dados.nome)
+      const dataNascimento = dataNascimentoCanonico(dados.dataNascimento)
+      const cidade = textoOpcional(dados.cidade)
+      const bairro = textoOpcional(dados.bairro)
+      const dataDoAtendimento = textoOpcional(dados.dataDoAtendimento)
       const atendimento: Atendimento = {
         id: crypto.randomUUID(),
         atividadeId,
         criadoEm: new Date().toISOString(),
-        ...(dados.nome ? { nome: dados.nome } : {}),
-        ...(dados.cpf ? { cpf: dados.cpf } : {}),
+        ...(nome ? { nome } : {}),
+        ...(cpf ? { cpf } : {}),
+        ...(dataNascimento ? { dataNascimento } : {}),
+        ...(dados.racaCor ? { racaCor: dados.racaCor } : {}),
+        ...(dados.escolaridade ? { escolaridade: dados.escolaridade } : {}),
+        ...(dados.faixaRenda ? { faixaRenda: dados.faixaRenda } : {}),
+        ...(cidade ? { cidade } : {}),
+        ...(bairro ? { bairro } : {}),
+        ...(dados.situacaoRua ? { situacaoRua: dados.situacaoRua } : {}),
+        ...(dados.usoSubstancias ? { usoSubstancias: dados.usoSubstancias } : {}),
+        ...(dataDoAtendimento ? { dataDoAtendimento } : {}),
       }
       const existentes = await persistencia.carregarAtendimentos()
       await persistencia.gravarAtendimentos([...existentes, atendimento])

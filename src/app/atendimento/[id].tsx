@@ -5,7 +5,14 @@ import { ActivityIndicator } from 'react-native'
 import { ThemedText } from '@/components/themed-text'
 import { useTheme } from '@/hooks/use-theme'
 import type { Atendimento, Atividade } from '@/registro-local/tipos'
-import { formatarInstante, nomeDaAtividade, nomeDoAtendimento } from '@/ui/atendimento'
+import {
+  formatarInstante,
+  isoParaPt,
+  mascararCpf,
+  nomeDaAtividade,
+  nomeDoAtendimento,
+  valorDoCampo,
+} from '@/ui/atendimento'
 import { useBaseLocal } from '@/ui/base-local-provider'
 import { copia } from '@/ui/copia'
 import { Tela } from '@/ui/tela'
@@ -72,12 +79,47 @@ export default function TelaDetalheAtendimento() {
       <ThemedText type="title" accessibilityRole="header">
         {copia.detalheTitulo}
       </ThemedText>
-      <ThemedText type="label">{copia.dataHora}</ThemedText>
-      <ThemedText>{formatarInstante(atendimento.criadoEm)}</ThemedText>
-      <ThemedText type="label">{copia.atividade}</ThemedText>
-      <ThemedText>{nomeDaAtividade(atividades, atendimento.atividadeId)}</ThemedText>
-      <ThemedText type="label">{copia.nome}</ThemedText>
-      <ThemedText>{nomeDoAtendimento(atendimento)}</ThemedText>
+      <CampoDetalhe
+        rotulo={copia.dataDoAtendimento}
+        valor={valorDoCampo(
+          atendimento.dataDoAtendimento ? isoParaPt(atendimento.dataDoAtendimento) : undefined,
+        )}
+      />
+      <CampoDetalhe rotulo={copia.dataHora} valor={formatarInstante(atendimento.criadoEm)} />
+      <CampoDetalhe
+        rotulo={copia.atividade}
+        valor={nomeDaAtividade(atividades, atendimento.atividadeId)}
+      />
+      <CampoDetalhe rotulo={copia.nome} valor={nomeDoAtendimento(atendimento)} />
+      <CampoDetalhe
+        rotulo={copia.cpf}
+        valor={atendimento.cpf ? mascararCpf(atendimento.cpf) : copia.naoInformado}
+      />
+      <CampoDetalhe
+        rotulo={copia.dataNascimento}
+        valor={valorDoCampo(
+          atendimento.dataNascimento ? isoParaPt(atendimento.dataNascimento) : undefined,
+        )}
+      />
+      <CampoDetalhe rotulo={copia.racaCor} valor={valorDoCampo(atendimento.racaCor)} />
+      <CampoDetalhe rotulo={copia.escolaridade} valor={valorDoCampo(atendimento.escolaridade)} />
+      <CampoDetalhe rotulo={copia.faixaRenda} valor={valorDoCampo(atendimento.faixaRenda)} />
+      <CampoDetalhe rotulo={copia.cidade} valor={valorDoCampo(atendimento.cidade)} />
+      <CampoDetalhe rotulo={copia.bairro} valor={valorDoCampo(atendimento.bairro)} />
+      <CampoDetalhe rotulo={copia.situacaoRua} valor={valorDoCampo(atendimento.situacaoRua)} />
+      <CampoDetalhe
+        rotulo={copia.usoSubstancias}
+        valor={valorDoCampo(atendimento.usoSubstancias)}
+      />
     </Tela>
+  )
+}
+
+function CampoDetalhe({ rotulo, valor }: { rotulo: string; valor: string }) {
+  return (
+    <>
+      <ThemedText type="label">{rotulo}</ThemedText>
+      <ThemedText>{valor}</ThemedText>
+    </>
   )
 }
