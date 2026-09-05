@@ -1,7 +1,11 @@
-import type { Atividade, Persistencia } from '@/registro-local/tipos'
+import type { Atendimento, Atividade, Persistencia } from '@/registro-local/tipos'
 
-export function persistenciaEmMemoria(atividadesIniciais: Atividade[] = []): Persistencia {
+export function persistenciaEmMemoria(
+  atividadesIniciais: Atividade[] = [],
+  atendimentosIniciais: Atendimento[] = [],
+): Persistencia {
   let atividades = atividadesIniciais.map((atividade) => ({ ...atividade }))
+  let atendimentos = atendimentosIniciais.map((atendimento) => ({ ...atendimento }))
 
   return {
     async carregarAtividades() {
@@ -9,6 +13,12 @@ export function persistenciaEmMemoria(atividadesIniciais: Atividade[] = []): Per
     },
     async gravarAtividades(proxima) {
       atividades = proxima.map((atividade) => ({ ...atividade }))
+    },
+    async carregarAtendimentos() {
+      return atendimentos.map((atendimento) => ({ ...atendimento }))
+    },
+    async gravarAtendimentos(proxima) {
+      atendimentos = proxima.map((atendimento) => ({ ...atendimento }))
     },
   }
 }

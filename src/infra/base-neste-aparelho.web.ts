@@ -1,7 +1,8 @@
 import type { BaseNesteAparelho, FachadaNesteAparelho } from '@/infra/tipos-base'
-import type { Atividade, Persistencia } from '@/registro-local/tipos'
+import type { Atendimento, Atividade, Persistencia } from '@/registro-local/tipos'
 
 const CHAVE_ATIVIDADES = 'ong-atendimentos.atividades'
+const CHAVE_ATENDIMENTOS = 'ong-atendimentos.atendimentos'
 const CHAVE_FACHADA = 'ong-atendimentos.fachada-passada'
 
 function lerJson<T>(chave: string, fallback: T): T {
@@ -19,6 +20,12 @@ export async function abrirBaseNesteAparelho(): Promise<BaseNesteAparelho> {
     },
     async gravarAtividades(atividades) {
       globalThis.localStorage.setItem(CHAVE_ATIVIDADES, JSON.stringify(atividades))
+    },
+    async carregarAtendimentos() {
+      return lerJson<Atendimento[]>(CHAVE_ATENDIMENTOS, [])
+    },
+    async gravarAtendimentos(atendimentos) {
+      globalThis.localStorage.setItem(CHAVE_ATENDIMENTOS, JSON.stringify(atendimentos))
     },
   }
 

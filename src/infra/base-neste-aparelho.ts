@@ -1,13 +1,21 @@
 import * as SQLite from 'expo-sqlite'
 
 import type { BaseNesteAparelho, FachadaNesteAparelho } from '@/infra/tipos-base'
-import type { Atividade, Persistencia } from '@/registro-local/tipos'
+import type { Atendimento, Atividade, Persistencia } from '@/registro-local/tipos'
 
 type LinhaAtividade = {
   id: string
   nome: string
   criada_em: string
   atualizada_em: string
+}
+
+type LinhaAtendimento = {
+  id: string
+  atividade_id: string
+  nome: string | null
+  cpf: string | null
+  criado_em: string
 }
 
 type LinhaPreferencia = {
@@ -27,6 +35,13 @@ export async function abrirBaseNesteAparelho(): Promise<BaseNesteAparelho> {
     CREATE TABLE IF NOT EXISTS preferencias (
       chave TEXT PRIMARY KEY NOT NULL,
       valor TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS atendimentos (
+      id TEXT PRIMARY KEY NOT NULL,
+      atividade_id TEXT NOT NULL,
+      nome TEXT,
+      cpf TEXT,
+      criado_em TEXT NOT NULL
     );
   `)
 
@@ -56,6 +71,27 @@ export async function abrirBaseNesteAparelho(): Promise<BaseNesteAparelho> {
         }
       })
     },
+    async carregarAtendimentos() {
+      const linhas = await db.getAllAsync<LinhaAtendimento>(
+        'SELECT id, atividade_id, nome, cpf, criado_em FROM atendimentos ORDER BY rowid',
+      )
+      return linhas.map(atendimentoDaLinha)
+    },
+    async gravarAtendimentos(atendimentos: Atendimento[]) {
+      await db.withExclusiveTransactionAsync(async (txn) => {
+        await txn.runAsync('DELETE FROM atendimentos')
+        for (const atendimento of atendimentos) {
+          await txn.runAsync(
+            'INSERT INTO atendimentos (id, atividade_id, nome, cpf, criado_em) VALUES (?, ?, ?, ?, ?)',
+            atendimento.id,
+            atendimento.atividadeId,
+            atendimento.nome ?? null,
+            atendimento.cpf ?? null,
+            atendimento.criadoEm,
+          )
+        }
+      })
+    },
   }
 
   const fachada: FachadaNesteAparelho = {
@@ -73,4 +109,14 @@ export async function abrirBaseNesteAparelho(): Promise<BaseNesteAparelho> {
   }
 
   return { persistencia, fachada }
+}
+
+function atendimentoDaLinha(linha: LinhaAtendimento): Atendimento {
+  return {
+    id: linha.id,
+    atividadeId: linha.atividade_id,
+    criadoEm: linha.criado_em,
+    ...(linha.nome ? { nome: linha.nome } : {}),
+    ...(linha.cpf ? { cpf: linha.cpf } : {}),
+  }
 }
