@@ -5,6 +5,7 @@ const CHAVE_ATIVIDADES = 'ong-atendimentos.atividades'
 const CHAVE_ATENDIMENTOS = 'ong-atendimentos.atendimentos'
 const CHAVE_FACHADA = 'ong-atendimentos.fachada-passada'
 const CHAVE_VIGENTE = 'ong-atendimentos.atividade-vigente'
+const CHAVE_CATALOGO = 'ong-atendimentos.catalogo-iniciado'
 
 function lerJson<T>(chave: string, fallback: T): T {
   const bruto = globalThis.localStorage.getItem(chave)
@@ -21,6 +22,13 @@ export async function abrirBaseNesteAparelho(): Promise<BaseNesteAparelho> {
     },
     async gravarAtividades(atividades) {
       globalThis.localStorage.setItem(CHAVE_ATIVIDADES, JSON.stringify(atividades))
+      globalThis.localStorage.setItem(CHAVE_CATALOGO, 'sim')
+    },
+    async jaIniciouCatalogo() {
+      return (
+        globalThis.localStorage.getItem(CHAVE_CATALOGO) === 'sim' ||
+        globalThis.localStorage.getItem(CHAVE_ATIVIDADES) !== null
+      )
     },
     async carregarAtendimentos() {
       return lerJson<Atendimento[]>(CHAVE_ATENDIMENTOS, [])

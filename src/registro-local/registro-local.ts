@@ -10,22 +10,64 @@ const NOMES_SEMENTE = [
 ] as const
 
 export function criarRegistroLocal(persistencia: Persistencia): RegistroLocal {
+  async function catalogo() {
+    const existentes = await persistencia.carregarAtividades()
+    if (existentes.length > 0 || (await persistencia.jaIniciouCatalogo())) {
+      return existentes
+    }
+
+    const agora = new Date().toISOString()
+    const sementes: Atividade[] = NOMES_SEMENTE.map((nome) => ({
+      id: crypto.randomUUID(),
+      nome,
+      criadaEm: agora,
+      atualizadaEm: agora,
+    }))
+    await persistencia.gravarAtividades(sementes)
+    return sementes
+  }
+
   return {
     async listarAtividades() {
-      const existentes = await persistencia.carregarAtividades()
-      if (existentes.length > 0) {
-        return existentes
-      }
-
+      return catalogo()
+    },
+    async criarAtividade(nome) {
+      const atividades = await catalogo()
       const agora = new Date().toISOString()
-      const sementes: Atividade[] = NOMES_SEMENTE.map((nome) => ({
+      const atividade: Atividade = {
         id: crypto.randomUUID(),
         nome,
         criadaEm: agora,
         atualizadaEm: agora,
-      }))
-      await persistencia.gravarAtividades(sementes)
-      return sementes
+      }
+      await persistencia.gravarAtividades([...atividades, atividade])
+      return atividade
+    },
+    async renomearAtividade(id, nome) {
+      const atividades = await persistencia.carregarAtividades()
+      const atual = atividades.find((atividade) => atividade.id === id)
+      if (!atual) {
+        throw new Error('Atividade precisa existir neste aparelho')
+      }
+      const atualizada: Atividade = {
+        ...atual,
+        nome,
+        atualizadaEm: new Date().toISOString(),
+      }
+      await persistencia.gravarAtividades(
+        atividades.map((atividade) => (atividade.id === id ? atualizada : atividade)),
+      )
+      return atualizada
+    },
+    async apagarAtividade(id) {
+      const atendimentos = await persistencia.carregarAtendimentos()
+      if (atendimentos.some((atendimento) => atendimento.atividadeId === id)) {
+        throw new Error(
+          'Não dá para apagar Atividade que já tem Atendimento. Mover Atendimentos entre Atividades vem depois.',
+        )
+      }
+      const atividades = await persistencia.carregarAtividades()
+      await persistencia.gravarAtividades(atividades.filter((atividade) => atividade.id !== id))
     },
     async obterAtividadeVigente() {
       const vigenteId = await persistencia.carregarAtividadeVigenteId()

@@ -302,4 +302,110 @@ describe('RegistroLocal', () => {
 
     expect(await segundo.obterAtividadeVigente()).toEqual(await primeiro.obterAtividadeVigente())
   })
+
+  test('cria Atividade pelo nome e ela classifica Atendimento', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    await registro.listarAtividades()
+
+    const criada = await registro.criarAtividade('Mutirão de cobertores')
+    const atendimento = await registro.criarAtendimento({ atividadeId: criada.id, nome: 'Lia' })
+
+    expect(criada.nome).toBe('Mutirão de cobertores')
+    expect((await registro.listarAtividades()).map((atividade) => atividade.nome)).toContain(
+      'Mutirão de cobertores',
+    )
+    expect(atendimento.atividadeId).toBe(criada.id)
+  })
+
+  test('renomear Atividade atualiza o rótulo e mantém a identidade vigente', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    const criada = await registro.criarAtividade('Mutirão')
+    await registro.definirAtividadeVigente(criada.id)
+    await registro.criarAtendimento({ nome: 'Lia' })
+
+    await registro.renomearAtividade(criada.id, 'Mutirão de cobertores')
+
+    const [atendimento] = await registro.listarAtendimentos()
+    const vigente = await registro.obterAtividadeVigente()
+    const ligada = (await registro.listarAtividades()).find(
+      (atividade) => atividade.id === atendimento?.atividadeId,
+    )
+
+    expect(atendimento?.atividadeId).toBe(criada.id)
+    expect(ligada?.nome).toBe('Mutirão de cobertores')
+    expect(vigente?.id).toBe(criada.id)
+    expect(vigente?.nome).toBe('Mutirão de cobertores')
+  })
+
+  test('apaga Atividade com zero Atendimentos', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    const criada = await registro.criarAtividade('Erro de digitação')
+
+    await registro.apagarAtividade(criada.id)
+
+    expect(
+      (await registro.listarAtividades()).some((atividade) => atividade.id === criada.id),
+    ).toBe(false)
+  })
+
+  test('recusa apagar Atividade que já tem Atendimento', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    const criada = await registro.criarAtividade('Plantão')
+    await registro.criarAtendimento({ atividadeId: criada.id })
+
+    await expect(registro.apagarAtividade(criada.id)).rejects.toThrow(
+      'Não dá para apagar Atividade que já tem Atendimento. Mover Atendimentos entre Atividades vem depois.',
+    )
+    expect(
+      (await registro.listarAtividades()).some((atividade) => atividade.id === criada.id),
+    ).toBe(true)
+    expect(await registro.listarAtendimentos()).toHaveLength(1)
+  })
+
+  test('apagar a Atividade vigente força escolher outra antes do próximo save', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    const criada = await registro.criarAtividade('Turno da manhã')
+    await registro.definirAtividadeVigente(criada.id)
+
+    await registro.apagarAtividade(criada.id)
+
+    expect(await registro.obterAtividadeVigente()).toBeNull()
+    await expect(registro.criarAtendimento({})).rejects.toThrow(
+      'Atendimento precisa de uma Atividade',
+    )
+  })
+
+  test('Outro se comporta como qualquer Atividade: dá para renomear e apagar se não tiver Atendimento', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    const outro = (await registro.listarAtividades()).find(
+      (atividade) => atividade.nome === 'Outro',
+    )
+
+    await registro.renomearAtividade(outro!.id, 'Plantão noturno')
+    expect((await registro.listarAtividades()).map((atividade) => atividade.nome)).not.toContain(
+      'Outro',
+    )
+    expect(
+      (await registro.listarAtividades()).some((atividade) => atividade.nome === 'Plantão noturno'),
+    ).toBe(true)
+
+    await registro.apagarAtividade(outro!.id)
+    expect(
+      (await registro.listarAtividades()).some((atividade) => atividade.id === outro!.id),
+    ).toBe(false)
+  })
+
+  test('apagar até zerar o catálogo não traz as sementes de volta', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    const iniciais = await registro.listarAtividades()
+    for (const atividade of iniciais) {
+      await registro.apagarAtividade(atividade.id)
+    }
+
+    expect(await registro.listarAtividades()).toEqual([])
+    await registro.criarAtividade('Plantão da casa')
+    expect((await registro.listarAtividades()).map((atividade) => atividade.nome)).toEqual([
+      'Plantão da casa',
+    ])
+  })
 })

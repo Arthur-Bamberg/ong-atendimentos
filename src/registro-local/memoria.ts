@@ -7,13 +7,18 @@ export function persistenciaEmMemoria(
   let atividades = atividadesIniciais.map((atividade) => ({ ...atividade }))
   let atendimentos = atendimentosIniciais.map((atendimento) => ({ ...atendimento }))
   let atividadeVigenteId: string | null = null
+  let catalogoIniciado = atividadesIniciais.length > 0
 
   return {
     async carregarAtividades() {
       return atividades.map((atividade) => ({ ...atividade }))
     },
     async gravarAtividades(proxima) {
+      catalogoIniciado = true
       atividades = proxima.map((atividade) => ({ ...atividade }))
+    },
+    async jaIniciouCatalogo() {
+      return catalogoIniciado
     },
     async carregarAtendimentos() {
       return atendimentos.map((atendimento) => ({ ...atendimento }))

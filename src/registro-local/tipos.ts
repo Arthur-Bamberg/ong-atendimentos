@@ -26,6 +26,7 @@ export type Indicadores = {
 export type Persistencia = {
   carregarAtividades(): Promise<Atividade[]>
   gravarAtividades(atividades: Atividade[]): Promise<void>
+  jaIniciouCatalogo(): Promise<boolean>
   carregarAtendimentos(): Promise<Atendimento[]>
   gravarAtendimentos(atendimentos: Atendimento[]): Promise<void>
   carregarAtividadeVigenteId(): Promise<string | null>
@@ -34,6 +35,9 @@ export type Persistencia = {
 
 export type RegistroLocal = {
   listarAtividades(): Promise<Atividade[]>
+  criarAtividade(nome: string): Promise<Atividade>
+  renomearAtividade(id: string, nome: string): Promise<Atividade>
+  apagarAtividade(id: string): Promise<void>
   obterAtividadeVigente(): Promise<Atividade | null>
   definirAtividadeVigente(atividadeId: string): Promise<void>
   criarAtendimento(dados: NovoAtendimento): Promise<Atendimento>

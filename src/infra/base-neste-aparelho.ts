@@ -69,7 +69,22 @@ export async function abrirBaseNesteAparelho(): Promise<BaseNesteAparelho> {
             atividade.atualizadaEm,
           )
         }
+        await txn.runAsync(
+          "INSERT OR REPLACE INTO preferencias (chave, valor) VALUES ('catalogo_iniciado', 'sim')",
+        )
       })
+    },
+    async jaIniciouCatalogo() {
+      const preferencia = await db.getFirstAsync<LinhaPreferencia>(
+        "SELECT valor FROM preferencias WHERE chave = 'catalogo_iniciado'",
+      )
+      if (preferencia?.valor === 'sim') {
+        return true
+      }
+      const linha = await db.getFirstAsync<{ quantidade: number }>(
+        'SELECT COUNT(*) AS quantidade FROM atividades',
+      )
+      return (linha?.quantidade ?? 0) > 0
     },
     async carregarAtendimentos() {
       const linhas = await db.getAllAsync<LinhaAtendimento>(
