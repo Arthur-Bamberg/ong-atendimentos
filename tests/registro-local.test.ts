@@ -490,6 +490,33 @@ describe('RegistroLocal', () => {
     expect(soCidade.dataDoAtendimento).toBeUndefined()
   })
 
+  test('grava programas sociais, observação e a marcação de pode participar', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    const [atividade] = await registro.listarAtividades()
+
+    const gravado = await registro.criarAtendimento({
+      atividadeId: atividade.id,
+      programasSociais: ['Gás do Povo', 'Bolsa Família', 'Bolsa Família'],
+      observacaoProgramasSociais: '  já recebe há dois anos  ',
+      podeParticiparProgramasSociais: true,
+    })
+    const semMarcar = await registro.criarAtendimento({
+      atividadeId: atividade.id,
+      programasSociais: [],
+      observacaoProgramasSociais: '   ',
+      podeParticiparProgramasSociais: false,
+    })
+
+    expect(await registro.obterAtendimento(gravado.id)).toMatchObject({
+      programasSociais: ['Bolsa Família', 'Gás do Povo'],
+      observacaoProgramasSociais: 'já recebe há dois anos',
+      podeParticiparProgramasSociais: true,
+    })
+    expect(semMarcar.programasSociais).toBeUndefined()
+    expect(semMarcar.observacaoProgramasSociais).toBeUndefined()
+    expect(semMarcar.podeParticiparProgramasSociais).toBeUndefined()
+  })
+
   test('recusa data de nascimento no futuro', async () => {
     const registro = criarRegistroLocal(persistenciaEmMemoria())
     const [atividade] = await registro.listarAtividades()

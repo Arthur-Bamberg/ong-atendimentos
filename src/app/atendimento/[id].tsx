@@ -111,6 +111,18 @@ export default function TelaDetalheAtendimento() {
         rotulo={copia.usoSubstancias}
         valor={valorDoCampo(atendimento.usoSubstancias)}
       />
+      <CampoDetalhe
+        rotulo={copia.programasSociais}
+        valor={valorDoCampo(atendimento.programasSociais?.join(', '))}
+      />
+      <CampoDetalhe
+        rotulo={copia.observacaoProgramasSociais}
+        valor={valorDoCampo(atendimento.observacaoProgramasSociais)}
+      />
+      <CampoDetalhe
+        rotulo={copia.podeParticiparProgramasSociais}
+        valor={valorDoCampo(atendimento.podeParticiparProgramasSociais ? 'sim' : undefined)}
+      />
     </Tela>
   )
 }

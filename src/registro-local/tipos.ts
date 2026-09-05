@@ -18,6 +18,14 @@ export const OPCOES_FAIXA_RENDA = [
 ] as const
 export const OPCOES_SITUACAO_RUA = ['sim', 'não'] as const
 export const OPCOES_USO_SUBSTANCIAS = ['não', 'álcool', 'outras drogas', 'ambos'] as const
+export const OPCOES_PROGRAMA_SOCIAL = [
+  'Minha Casa Minha Vida',
+  'ProUni',
+  'FIES',
+  'Bolsa Família',
+  'Lei Rouanet',
+  'Gás do Povo',
+] as const
 export const FAIXAS_ETARIAS = ['0–11', '12–17', '18–29', '30–59', '60+'] as const
 
 export type RacaCor = (typeof OPCOES_RACA_COR)[number]
@@ -25,6 +33,7 @@ export type Escolaridade = (typeof OPCOES_ESCOLARIDADE)[number]
 export type FaixaRenda = (typeof OPCOES_FAIXA_RENDA)[number]
 export type SituacaoRua = (typeof OPCOES_SITUACAO_RUA)[number]
 export type UsoSubstancias = (typeof OPCOES_USO_SUBSTANCIAS)[number]
+export type ProgramaSocial = (typeof OPCOES_PROGRAMA_SOCIAL)[number]
 
 export type Atividade = {
   id: string
@@ -46,6 +55,9 @@ export type Atendimento = {
   bairro?: string
   situacaoRua?: SituacaoRua
   usoSubstancias?: UsoSubstancias
+  programasSociais?: ProgramaSocial[]
+  observacaoProgramasSociais?: string
+  podeParticiparProgramasSociais?: boolean
   dataDoAtendimento?: string
   criadoEm: string
 }
@@ -62,6 +74,9 @@ export type NovoAtendimento = {
   bairro?: string
   situacaoRua?: SituacaoRua
   usoSubstancias?: UsoSubstancias
+  programasSociais?: ProgramaSocial[]
+  observacaoProgramasSociais?: string
+  podeParticiparProgramasSociais?: boolean
   dataDoAtendimento?: string
 }
 

@@ -1,15 +1,17 @@
 import * as SQLite from 'expo-sqlite'
 
 import type { BaseNesteAparelho, FachadaNesteAparelho } from '@/infra/tipos-base'
-import type {
-  Atendimento,
-  Atividade,
-  Escolaridade,
-  FaixaRenda,
-  Persistencia,
-  RacaCor,
-  SituacaoRua,
-  UsoSubstancias,
+import {
+  OPCOES_PROGRAMA_SOCIAL,
+  type Atendimento,
+  type Atividade,
+  type Escolaridade,
+  type FaixaRenda,
+  type Persistencia,
+  type ProgramaSocial,
+  type RacaCor,
+  type SituacaoRua,
+  type UsoSubstancias,
 } from '@/registro-local/tipos'
 
 type LinhaAtividade = {
@@ -32,6 +34,9 @@ type LinhaAtendimento = {
   bairro: string | null
   situacao_rua: string | null
   uso_substancias: string | null
+  programas_sociais: string | null
+  observacao_programas_sociais: string | null
+  pode_participar_programas_sociais: string | null
   data_do_atendimento: string | null
   criado_em: string
 }
@@ -49,6 +54,9 @@ const COLUNAS_ATENDIMENTO = [
   ['bairro', 'TEXT'],
   ['situacao_rua', 'TEXT'],
   ['uso_substancias', 'TEXT'],
+  ['programas_sociais', 'TEXT'],
+  ['observacao_programas_sociais', 'TEXT'],
+  ['pode_participar_programas_sociais', 'TEXT'],
   ['data_do_atendimento', 'TEXT'],
 ] as const
 
@@ -120,7 +128,9 @@ export async function abrirBaseNesteAparelho(): Promise<BaseNesteAparelho> {
     async carregarAtendimentos() {
       const linhas = await db.getAllAsync<LinhaAtendimento>(
         `SELECT id, atividade_id, nome, cpf, data_nascimento, raca_cor, escolaridade, faixa_renda,
-                cidade, bairro, situacao_rua, uso_substancias, data_do_atendimento, criado_em
+                cidade, bairro, situacao_rua, uso_substancias, programas_sociais,
+                observacao_programas_sociais, pode_participar_programas_sociais,
+                data_do_atendimento, criado_em
          FROM atendimentos ORDER BY rowid`,
       )
       return linhas.map(atendimentoDaLinha)
@@ -132,8 +142,10 @@ export async function abrirBaseNesteAparelho(): Promise<BaseNesteAparelho> {
           await txn.runAsync(
             `INSERT INTO atendimentos (
                id, atividade_id, nome, cpf, data_nascimento, raca_cor, escolaridade, faixa_renda,
-               cidade, bairro, situacao_rua, uso_substancias, data_do_atendimento, criado_em
-             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+               cidade, bairro, situacao_rua, uso_substancias, programas_sociais,
+               observacao_programas_sociais, pode_participar_programas_sociais,
+               data_do_atendimento, criado_em
+             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             atendimento.id,
             atendimento.atividadeId,
             atendimento.nome ?? null,
@@ -146,6 +158,9 @@ export async function abrirBaseNesteAparelho(): Promise<BaseNesteAparelho> {
             atendimento.bairro ?? null,
             atendimento.situacaoRua ?? null,
             atendimento.usoSubstancias ?? null,
+            atendimento.programasSociais ? JSON.stringify(atendimento.programasSociais) : null,
+            atendimento.observacaoProgramasSociais ?? null,
+            atendimento.podeParticiparProgramasSociais ? 'sim' : null,
             atendimento.dataDoAtendimento ?? null,
             atendimento.criadoEm,
           )
@@ -198,6 +213,7 @@ function opcional(valor: string | null): string | undefined {
 }
 
 function atendimentoDaLinha(linha: LinhaAtendimento): Atendimento {
+  const programasSociais = programasDaLinha(linha.programas_sociais)
   return {
     id: linha.id,
     atividadeId: linha.atividade_id,
@@ -214,8 +230,32 @@ function atendimentoDaLinha(linha: LinhaAtendimento): Atendimento {
     ...(opcional(linha.uso_substancias)
       ? { usoSubstancias: linha.uso_substancias as UsoSubstancias }
       : {}),
+    ...(programasSociais ? { programasSociais } : {}),
+    ...(opcional(linha.observacao_programas_sociais)
+      ? { observacaoProgramasSociais: linha.observacao_programas_sociais as string }
+      : {}),
+    ...(linha.pode_participar_programas_sociais === 'sim'
+      ? { podeParticiparProgramasSociais: true }
+      : {}),
     ...(opcional(linha.data_do_atendimento)
       ? { dataDoAtendimento: linha.data_do_atendimento as string }
       : {}),
+  }
+}
+
+function programasDaLinha(bruto: string | null): ProgramaSocial[] | undefined {
+  if (!bruto) {
+    return undefined
+  }
+  try {
+    const lido = JSON.parse(bruto) as unknown
+    if (!Array.isArray(lido)) {
+      return undefined
+    }
+    const escolhidos = new Set(lido.filter((item) => typeof item === 'string'))
+    const ordenados = OPCOES_PROGRAMA_SOCIAL.filter((opcao) => escolhidos.has(opcao))
+    return ordenados.length > 0 ? [...ordenados] : undefined
+  } catch {
+    return undefined
   }
 }

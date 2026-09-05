@@ -7,12 +7,14 @@ import { useTheme } from '@/hooks/use-theme'
 import {
   OPCOES_ESCOLARIDADE,
   OPCOES_FAIXA_RENDA,
+  OPCOES_PROGRAMA_SOCIAL,
   OPCOES_RACA_COR,
   OPCOES_SITUACAO_RUA,
   OPCOES_USO_SUBSTANCIAS,
   type Atividade,
   type Escolaridade,
   type FaixaRenda,
+  type ProgramaSocial,
   type RacaCor,
   type SituacaoRua,
   type UsoSubstancias,
@@ -25,7 +27,9 @@ import {
   BotaoPrincipal,
   CampoTexto,
   EscolhaFechada,
+  EscolhaMultipla,
   LinhaPressionavel,
+  Marcacao,
   Tela,
 } from '@/ui/tela'
 
@@ -40,6 +44,9 @@ type Rascunho = {
   bairro: string
   situacaoRua: SituacaoRua | ''
   usoSubstancias: UsoSubstancias | ''
+  programasSociais: ProgramaSocial[]
+  observacaoProgramasSociais: string
+  podeParticiparProgramasSociais: boolean
   dataDoAtendimento: string
 }
 
@@ -55,6 +62,9 @@ function rascunhoEmBranco(): Rascunho {
     bairro: '',
     situacaoRua: '',
     usoSubstancias: '',
+    programasSociais: [],
+    observacaoProgramasSociais: '',
+    podeParticiparProgramasSociais: false,
     dataDoAtendimento: isoParaPt(dataLocalHojeIso()),
   }
 }
@@ -130,6 +140,9 @@ export default function TelaFormulario() {
         bairro: rascunho.bairro,
         situacaoRua: rascunho.situacaoRua || undefined,
         usoSubstancias: rascunho.usoSubstancias || undefined,
+        programasSociais: rascunho.programasSociais,
+        observacaoProgramasSociais: rascunho.observacaoProgramasSociais,
+        podeParticiparProgramasSociais: rascunho.podeParticiparProgramasSociais,
         dataDoAtendimento: ptParaIso(rascunho.dataDoAtendimento),
       })
       setErro(null)
@@ -252,6 +265,24 @@ export default function TelaFormulario() {
         opcoes={OPCOES_USO_SUBSTANCIAS}
         rotulo={rotuloOpcional(copia.usoSubstancias)}
         valor={rascunho.usoSubstancias}
+      />
+      <EscolhaMultipla
+        onChange={(valor) => atualizar('programasSociais', valor)}
+        opcoes={OPCOES_PROGRAMA_SOCIAL}
+        rotulo={rotuloOpcional(copia.programasSociais)}
+        valores={rascunho.programasSociais}
+      />
+      <CampoTexto
+        autoCapitalize="sentences"
+        multiline
+        onChangeText={(valor) => atualizar('observacaoProgramasSociais', valor)}
+        rotulo={rotuloOpcional(copia.observacaoProgramasSociais)}
+        value={rascunho.observacaoProgramasSociais}
+      />
+      <Marcacao
+        marcada={rascunho.podeParticiparProgramasSociais}
+        onChange={(valor) => atualizar('podeParticiparProgramasSociais', valor)}
+        rotulo={rotuloOpcional(copia.podeParticiparProgramasSociais)}
       />
       <CampoTexto
         autoCapitalize="none"

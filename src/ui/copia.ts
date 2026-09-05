@@ -55,6 +55,9 @@ export const copia = {
   bairro: 'Bairro',
   situacaoRua: 'Situação de rua',
   usoSubstancias: 'Uso de substâncias',
+  programasSociais: 'Participa ou participou de programa social',
+  observacaoProgramasSociais: 'Observação',
+  podeParticiparProgramasSociais: 'Pode participar de programas sociais',
   dataDoAtendimento: 'Data do atendimento',
   informativoIdentificacao:
     'Falta de identificação única distorce qualquer leitura como se fosse “pessoas”. Vários Atendimentos da mesma pessoa — com ou sem CPF — também distorcem essa leitura.',

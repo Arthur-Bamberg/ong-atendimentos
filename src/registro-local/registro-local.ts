@@ -2,6 +2,7 @@ import {
   FAIXAS_ETARIAS,
   OPCOES_ESCOLARIDADE,
   OPCOES_FAIXA_RENDA,
+  OPCOES_PROGRAMA_SOCIAL,
   OPCOES_RACA_COR,
   OPCOES_SITUACAO_RUA,
   OPCOES_USO_SUBSTANCIAS,
@@ -9,6 +10,7 @@ import {
   type Atividade,
   type Bucket,
   type Persistencia,
+  type ProgramaSocial,
   type RegistroLocal,
 } from '@/registro-local/tipos'
 
@@ -52,6 +54,15 @@ function cpfValido(digitos: string): boolean {
 function textoOpcional(valor: string | undefined): string | undefined {
   const limpo = valor?.trim()
   return limpo ? limpo : undefined
+}
+
+function programasCanonicos(valores: ProgramaSocial[] | undefined): ProgramaSocial[] | undefined {
+  if (!valores?.length) {
+    return undefined
+  }
+  const escolhidos = new Set(valores)
+  const ordenados = OPCOES_PROGRAMA_SOCIAL.filter((opcao) => escolhidos.has(opcao))
+  return ordenados.length > 0 ? [...ordenados] : undefined
 }
 
 function dataLocalHoje(): string {
@@ -221,6 +232,8 @@ export function criarRegistroLocal(persistencia: Persistencia): RegistroLocal {
       const cidade = textoOpcional(dados.cidade)
       const bairro = textoOpcional(dados.bairro)
       const dataDoAtendimento = textoOpcional(dados.dataDoAtendimento)
+      const programasSociais = programasCanonicos(dados.programasSociais)
+      const observacaoProgramasSociais = textoOpcional(dados.observacaoProgramasSociais)
       const atendimento: Atendimento = {
         id: crypto.randomUUID(),
         atividadeId,
@@ -235,6 +248,9 @@ export function criarRegistroLocal(persistencia: Persistencia): RegistroLocal {
         ...(bairro ? { bairro } : {}),
         ...(dados.situacaoRua ? { situacaoRua: dados.situacaoRua } : {}),
         ...(dados.usoSubstancias ? { usoSubstancias: dados.usoSubstancias } : {}),
+        ...(programasSociais ? { programasSociais } : {}),
+        ...(observacaoProgramasSociais ? { observacaoProgramasSociais } : {}),
+        ...(dados.podeParticiparProgramasSociais ? { podeParticiparProgramasSociais: true } : {}),
         ...(dataDoAtendimento ? { dataDoAtendimento } : {}),
       }
       const existentes = await persistencia.carregarAtendimentos()

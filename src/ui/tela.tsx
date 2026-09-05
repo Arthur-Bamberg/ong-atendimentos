@@ -173,8 +173,9 @@ export function CampoTexto({
             color: theme.foreground,
             backgroundColor: theme.card,
             borderColor: foco ? theme.ring : theme.border,
-            minHeight: MinTouch,
+            minHeight: rest.multiline ? MinTouch * 2 : MinTouch,
           },
+          rest.multiline ? styles.campoMultilinha : null,
           rest.style,
         ]}
       />
@@ -207,6 +208,65 @@ export function EscolhaFechada<T extends string>({
         </LinhaPressionavel>
       ))}
     </>
+  )
+}
+
+export function EscolhaMultipla<T extends string>({
+  rotulo,
+  opcoes,
+  valores,
+  onChange,
+}: {
+  rotulo: string
+  opcoes: readonly T[]
+  valores: readonly T[]
+  onChange: (valores: T[]) => void
+}) {
+  return (
+    <>
+      <ThemedText type="label">{rotulo}</ThemedText>
+      {opcoes.map((opcao) => {
+        const selecionada = valores.includes(opcao)
+        return (
+          <LinhaPressionavel
+            key={opcao}
+            accessibilityLabel={opcao}
+            onPress={() => {
+              const escolhidos = new Set(valores)
+              if (selecionada) {
+                escolhidos.delete(opcao)
+              } else {
+                escolhidos.add(opcao)
+              }
+              onChange(opcoes.filter((item) => escolhidos.has(item)))
+            }}
+            selecionada={selecionada}
+          >
+            <ThemedText>{opcao}</ThemedText>
+          </LinhaPressionavel>
+        )
+      })}
+    </>
+  )
+}
+
+export function Marcacao({
+  rotulo,
+  marcada,
+  onChange,
+}: {
+  rotulo: string
+  marcada: boolean
+  onChange: (marcada: boolean) => void
+}) {
+  return (
+    <LinhaPressionavel
+      accessibilityLabel={rotulo}
+      onPress={() => onChange(!marcada)}
+      selecionada={marcada}
+    >
+      <ThemedText>{rotulo}</ThemedText>
+    </LinhaPressionavel>
   )
 }
 
@@ -273,5 +333,9 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.body,
     fontSize: 16,
     lineHeight: 24,
+  },
+  campoMultilinha: {
+    paddingVertical: Spacing.sm,
+    textAlignVertical: 'top',
   },
 })
