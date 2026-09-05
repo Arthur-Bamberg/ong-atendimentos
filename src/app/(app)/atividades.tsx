@@ -15,6 +15,7 @@ export default function TelaAtividades() {
   const theme = useTheme()
   const { registro } = useBaseLocal()
   const [atividades, setAtividades] = useState<Atividade[] | null>(null)
+  const [idsComAtendimento, setIdsComAtendimento] = useState<ReadonlySet<string>>(new Set())
   const [nomeNovo, setNomeNovo] = useState('')
   const [editandoId, setEditandoId] = useState<string | null>(null)
   const [nomeEdicao, setNomeEdicao] = useState('')
@@ -24,18 +25,24 @@ export default function TelaAtividades() {
   const [focoEdicao, setFocoEdicao] = useState(false)
 
   const recarregar = useCallback(async () => {
-    const lista = await registro.listarAtividades()
+    const [lista, atendimentos] = await Promise.all([
+      registro.listarAtividades(),
+      registro.listarAtendimentos(),
+    ])
     setAtividades(lista)
+    setIdsComAtendimento(new Set(atendimentos.map((atendimento) => atendimento.atividadeId)))
   }, [registro])
 
   useFocusEffect(
     useCallback(() => {
       let cancelado = false
-      registro
-        .listarAtividades()
-        .then((lista) => {
+      Promise.all([registro.listarAtividades(), registro.listarAtendimentos()])
+        .then(([lista, atendimentos]) => {
           if (!cancelado) {
             setAtividades(lista)
+            setIdsComAtendimento(
+              new Set(atendimentos.map((atendimento) => atendimento.atividadeId)),
+            )
           }
         })
         .catch(() => {
@@ -51,7 +58,11 @@ export default function TelaAtividades() {
 
   async function criar() {
     const nome = nomeNovo.trim()
-    if (ocupado || !nome) {
+    if (ocupado) {
+      return
+    }
+    if (!nome) {
+      setErro(copia.erroNomeAtividade)
       return
     }
     setOcupado('criar')
@@ -87,7 +98,7 @@ export default function TelaAtividades() {
   }
 
   async function apagar(id: string) {
-    if (ocupado) {
+    if (ocupado || idsComAtendimento.has(id)) {
       return
     }
     setOcupado('apagar')
@@ -150,70 +161,53 @@ export default function TelaAtividades() {
         value={nomeNovo}
       />
       <BotaoPrincipal
-        disabled={!nomeNovo.trim() || ocupado !== null}
+        disabled={ocupado !== null}
         onPress={criar}
         ocupado={ocupado === 'criar'}
         rotulo={copia.criarAtividade}
       />
 
-      {atividades.map((atividade) => (
-        <ThemedView
-          key={atividade.id}
-          surface="card"
-          style={[styles.item, { borderColor: theme.border }]}
-        >
-          {editandoId === atividade.id ? (
-            <>
-              <TextInput
-                accessibilityLabel={`${copia.renomear} ${atividade.nome}`}
-                onBlur={() => setFocoEdicao(false)}
-                onChangeText={setNomeEdicao}
-                onFocus={() => setFocoEdicao(true)}
-                placeholder={copia.nome}
-                placeholderTextColor={theme.mutedForeground}
-                style={[
-                  styles.campo,
-                  {
-                    color: theme.foreground,
-                    backgroundColor: theme.background,
-                    borderColor: focoEdicao ? theme.ring : theme.border,
-                    minHeight: MinTouch,
-                  },
-                ]}
-                value={nomeEdicao}
-              />
-              <BotaoPrincipal
-                disabled={!nomeEdicao.trim() || ocupado !== null}
-                onPress={() => guardarNome(atividade.id)}
-                ocupado={ocupado === 'renomear'}
-                rotulo={copia.guardarNome}
-              />
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => {
-                  setEditandoId(null)
-                  setNomeEdicao('')
-                }}
-                style={({ pressed }) => [
-                  styles.acao,
-                  Platform.OS === 'web' ? styles.clicavelWeb : null,
-                  { opacity: pressed ? 0.7 : 1 },
-                ]}
-              >
-                <ThemedText type="link">{copia.cancelar}</ThemedText>
-              </Pressable>
-            </>
-          ) : (
-            <>
-              <ThemedText>{atividade.nome}</ThemedText>
-              <View style={styles.acoes}>
-                <Pressable
+      {atividades.map((atividade) => {
+        const temAtendimento = idsComAtendimento.has(atividade.id)
+        const apagarInativo = temAtendimento || ocupado !== null
+
+        return (
+          <ThemedView
+            key={atividade.id}
+            surface="card"
+            style={[styles.item, { borderColor: theme.border }]}
+          >
+            {editandoId === atividade.id ? (
+              <>
+                <TextInput
                   accessibilityLabel={`${copia.renomear} ${atividade.nome}`}
+                  onBlur={() => setFocoEdicao(false)}
+                  onChangeText={setNomeEdicao}
+                  onFocus={() => setFocoEdicao(true)}
+                  placeholder={copia.nome}
+                  placeholderTextColor={theme.mutedForeground}
+                  style={[
+                    styles.campo,
+                    {
+                      color: theme.foreground,
+                      backgroundColor: theme.background,
+                      borderColor: focoEdicao ? theme.ring : theme.border,
+                      minHeight: MinTouch,
+                    },
+                  ]}
+                  value={nomeEdicao}
+                />
+                <BotaoPrincipal
+                  disabled={!nomeEdicao.trim() || ocupado !== null}
+                  onPress={() => guardarNome(atividade.id)}
+                  ocupado={ocupado === 'renomear'}
+                  rotulo={copia.guardarNome}
+                />
+                <Pressable
                   accessibilityRole="button"
                   onPress={() => {
-                    setEditandoId(atividade.id)
-                    setNomeEdicao(atividade.nome)
-                    setErro(null)
+                    setEditandoId(null)
+                    setNomeEdicao('')
                   }}
                   style={({ pressed }) => [
                     styles.acao,
@@ -221,28 +215,55 @@ export default function TelaAtividades() {
                     { opacity: pressed ? 0.7 : 1 },
                   ]}
                 >
-                  <ThemedText type="link">{copia.renomear}</ThemedText>
+                  <ThemedText type="link">{copia.cancelar}</ThemedText>
                 </Pressable>
-                <Pressable
-                  accessibilityLabel={`${copia.apagar} ${atividade.nome}`}
-                  accessibilityRole="button"
-                  disabled={ocupado !== null}
-                  onPress={() => apagar(atividade.id)}
-                  style={({ pressed }) => [
-                    styles.acao,
-                    Platform.OS === 'web' ? styles.clicavelWeb : null,
-                    { opacity: ocupado ? 0.5 : pressed ? 0.7 : 1 },
-                  ]}
-                >
-                  <ThemedText type="link" tone="destructive">
-                    {copia.apagar}
-                  </ThemedText>
-                </Pressable>
-              </View>
-            </>
-          )}
-        </ThemedView>
-      ))}
+              </>
+            ) : (
+              <>
+                <ThemedText>{atividade.nome}</ThemedText>
+                <View style={styles.acoes}>
+                  <Pressable
+                    accessibilityLabel={`${copia.renomear} ${atividade.nome}`}
+                    accessibilityRole="button"
+                    onPress={() => {
+                      setEditandoId(atividade.id)
+                      setNomeEdicao(atividade.nome)
+                      setErro(null)
+                    }}
+                    style={({ pressed }) => [
+                      styles.acao,
+                      Platform.OS === 'web' ? styles.clicavelWeb : null,
+                      { opacity: pressed ? 0.7 : 1 },
+                    ]}
+                  >
+                    <ThemedText type="link">{copia.renomear}</ThemedText>
+                  </Pressable>
+                  <Pressable
+                    accessibilityHint={temAtendimento ? copia.apagarComAtendimento : undefined}
+                    accessibilityLabel={`${copia.apagar} ${atividade.nome}`}
+                    accessibilityRole="button"
+                    accessibilityState={{ disabled: apagarInativo }}
+                    disabled={apagarInativo}
+                    onPress={() => apagar(atividade.id)}
+                    style={({ pressed }) => [
+                      styles.acao,
+                      Platform.OS === 'web' ? styles.clicavelWeb : null,
+                      { opacity: apagarInativo ? 0.5 : pressed ? 0.7 : 1 },
+                    ]}
+                  >
+                    <ThemedText
+                      type="link"
+                      tone={temAtendimento ? 'mutedForeground' : 'destructive'}
+                    >
+                      {copia.apagar}
+                    </ThemedText>
+                  </Pressable>
+                </View>
+              </>
+            )}
+          </ThemedView>
+        )
+      })}
     </Tela>
   )
 }

@@ -81,7 +81,6 @@ export default function TelaFormulario() {
   const [rascunho, setRascunho] = useState(rascunhoEmBranco)
   const [erro, setErro] = useState<string | null>(null)
   const [gravando, setGravando] = useState(false)
-  const [gravado, setGravado] = useState(false)
 
   useFocusEffect(
     useCallback(() => {
@@ -146,7 +145,7 @@ export default function TelaFormulario() {
         dataDoAtendimento: ptParaIso(rascunho.dataDoAtendimento),
       })
       setErro(null)
-      setGravado(true)
+      setRascunho(rascunhoEmBranco())
     } catch (falha) {
       setErro(falha instanceof Error ? falha.message : copia.erroGravarAtendimento)
     } finally {
@@ -154,28 +153,10 @@ export default function TelaFormulario() {
     }
   }
 
-  function abrirNovo() {
-    setRascunho(rascunhoEmBranco())
-    setErro(null)
-    setGravado(false)
-  }
-
   if (!atividades && !erro) {
     return (
       <Tela edges={[]}>
         <ActivityIndicator color={theme.primary} accessibilityLabel={copia.carregando} />
-      </Tela>
-    )
-  }
-
-  if (gravado) {
-    return (
-      <Tela edges={[]}>
-        <ThemedText type="title" accessibilityRole="header">
-          {copia.formularioTitulo}
-        </ThemedText>
-        <ThemedText>{copia.atendimentoGravado}</ThemedText>
-        <BotaoPrincipal onPress={abrirNovo} rotulo={copia.novoAtendimento} />
       </Tela>
     )
   }

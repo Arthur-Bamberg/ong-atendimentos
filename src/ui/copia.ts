@@ -26,7 +26,10 @@ export const copia = {
   guardarNome: 'Guardar nome',
   cancelar: 'Cancelar',
   apagar: 'Apagar',
+  apagarComAtendimento:
+    'Não dá para apagar Atividade que já tem Atendimento. Mover Atendimentos entre Atividades vem depois.',
   erroAtividades: 'Não foi possível carregar as Atividades neste aparelho.',
+  erroNomeAtividade: 'Informe o nome da Atividade.',
   erroCriarAtividade: 'Não foi possível criar a Atividade neste aparelho.',
   erroRenomearAtividade: 'Não foi possível renomear a Atividade neste aparelho.',
   erroApagarAtividade: 'Não foi possível apagar a Atividade neste aparelho.',
@@ -61,8 +64,6 @@ export const copia = {
   dataDoAtendimento: 'Data do atendimento',
   informativoIdentificacao:
     'Falta de identificação única distorce qualquer leitura como se fosse “pessoas”. Vários Atendimentos da mesma pessoa — com ou sem CPF — também distorcem essa leitura.',
-  novoAtendimento: 'Novo atendimento',
-  atendimentoGravado: 'Atendimento gravado neste aparelho.',
   naoInformado: 'Não informado',
   graficosTitulo: 'Gráficos',
   graficosAba: 'Gráficos',
