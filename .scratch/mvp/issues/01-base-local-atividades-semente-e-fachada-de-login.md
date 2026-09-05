@@ -4,14 +4,18 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** claimed
 
-- [ ] Há tela de login; o submit entra no app independentemente das credenciais digitadas
-- [ ] Há tela de “esqueci a senha” que explica que não há recuperação por e-mail porque a Base local vive neste aparelho
-- [ ] Depois da primeira entrada neste aparelho, reabrir o app já passa da fachada de login
-- [ ] Na primeira abertura com catálogo vazio existem as seis Atividades semente: Abordagem de rua, Acolhimento / abrigo, Distribuição de alimentos, Encaminhamento, Atendimento psicossocial, Outro
-- [ ] O Operador vê a lista dessas Atividades
-- [ ] Matar e reabrir o app preserva as Atividades e o fato de a fachada já ter sido passada
-- [ ] Dois Operadores que se revezam no mesmo telefone veem o mesmo catálogo
-- [ ] A cópia deixa claro que outro aparelho não recebe esses registros
-- [ ] A UI de domínio está em pt-BR e não chama o Operador de usuário
+- [x] Há tela de login; o submit entra no app independentemente das credenciais digitadas
+- [x] Há tela de “esqueci a senha” que explica que não há recuperação por e-mail porque a Base local vive neste aparelho
+- [x] Depois da primeira entrada neste aparelho, reabrir o app já passa da fachada de login
+- [x] Na primeira abertura com catálogo vazio existem as seis Atividades semente: Abordagem de rua, Acolhimento / abrigo, Distribuição de alimentos, Encaminhamento, Atendimento psicossocial, Outro
+- [x] O Operador vê a lista dessas Atividades
+- [x] Matar e reabrir o app preserva as Atividades e o fato de a fachada já ter sido passada
+- [x] Dois Operadores que se revezam no mesmo telefone veem o mesmo catálogo
+- [x] A cópia deixa claro que outro aparelho não recebe esses registros
+- [x] A UI de domínio está em pt-BR e não chama o Operador de usuário
+
+## Comments
+
+Implementado no app Expo: porto `RegistroLocal` (sementes + listagem) com fake em memória nos testes; SQLite neste aparelho; fachada de login/esqueci a senha só presentacional; flag e catálogo sobrevivem a reabrir.
