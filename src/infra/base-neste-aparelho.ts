@@ -92,6 +92,18 @@ export async function abrirBaseNesteAparelho(): Promise<BaseNesteAparelho> {
         }
       })
     },
+    async carregarAtividadeVigenteId() {
+      const linha = await db.getFirstAsync<LinhaPreferencia>(
+        "SELECT valor FROM preferencias WHERE chave = 'atividade_vigente'",
+      )
+      return linha?.valor ?? null
+    },
+    async gravarAtividadeVigenteId(atividadeId: string) {
+      await db.runAsync(
+        "INSERT OR REPLACE INTO preferencias (chave, valor) VALUES ('atividade_vigente', ?)",
+        atividadeId,
+      )
+    },
   }
 
   const fachada: FachadaNesteAparelho = {

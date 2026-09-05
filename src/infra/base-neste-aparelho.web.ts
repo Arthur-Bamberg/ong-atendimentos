@@ -4,6 +4,7 @@ import type { Atendimento, Atividade, Persistencia } from '@/registro-local/tipo
 const CHAVE_ATIVIDADES = 'ong-atendimentos.atividades'
 const CHAVE_ATENDIMENTOS = 'ong-atendimentos.atendimentos'
 const CHAVE_FACHADA = 'ong-atendimentos.fachada-passada'
+const CHAVE_VIGENTE = 'ong-atendimentos.atividade-vigente'
 
 function lerJson<T>(chave: string, fallback: T): T {
   const bruto = globalThis.localStorage.getItem(chave)
@@ -26,6 +27,12 @@ export async function abrirBaseNesteAparelho(): Promise<BaseNesteAparelho> {
     },
     async gravarAtendimentos(atendimentos) {
       globalThis.localStorage.setItem(CHAVE_ATENDIMENTOS, JSON.stringify(atendimentos))
+    },
+    async carregarAtividadeVigenteId() {
+      return globalThis.localStorage.getItem(CHAVE_VIGENTE)
+    },
+    async gravarAtividadeVigenteId(atividadeId) {
+      globalThis.localStorage.setItem(CHAVE_VIGENTE, atividadeId)
     },
   }
 

@@ -37,7 +37,7 @@ export default function TelaAtividades() {
 
   if (erro) {
     return (
-      <Tela>
+      <Tela edges={[]}>
         <ThemedText tone="destructive">{erro}</ThemedText>
       </Tela>
     )
@@ -45,14 +45,14 @@ export default function TelaAtividades() {
 
   if (!atividades) {
     return (
-      <Tela>
+      <Tela edges={[]}>
         <ActivityIndicator color={theme.primary} accessibilityLabel={copia.carregando} />
       </Tela>
     )
   }
 
   return (
-    <Tela>
+    <Tela edges={[]}>
       <ThemedText type="title" accessibilityRole="header">
         {copia.atividadesTitulo}
       </ThemedText>
@@ -75,6 +75,6 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     borderRadius: Radius.md,
     borderWidth: 1,
-    gap: Spacing.xs,
+    gap: Spacing.sm,
   },
 })

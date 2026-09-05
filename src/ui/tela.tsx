@@ -1,17 +1,24 @@
 import { Ionicons } from '@expo/vector-icons'
 import { type ReactNode } from 'react'
-import { Platform, Pressable, ScrollView, StyleSheet, View, type PressableProps } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import {
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+  type PressableProps,
+} from 'react-native'
+import { SafeAreaView, type Edges } from 'react-native-safe-area-context'
 
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
 import { Fonts, MaxContentWidth, MinTouch, Radius, Spacing } from '@/constants/theme'
 import { useTheme } from '@/hooks/use-theme'
 
-export function Tela({ children }: { children: ReactNode }) {
+export function Tela({ children, edges = ['bottom'] }: { children: ReactNode; edges?: Edges }) {
   return (
     <ThemedView style={styles.fundo}>
-      <SafeAreaView style={styles.safe} edges={['bottom']}>
+      <SafeAreaView style={styles.safe} edges={edges}>
         <ScrollView contentContainerStyle={styles.conteudo} keyboardShouldPersistTaps="handled">
           <View style={styles.coluna}>{children}</View>
         </ScrollView>
@@ -75,6 +82,34 @@ export function BotaoSecundario({ rotulo, ...rest }: PressableProps & { rotulo: 
   )
 }
 
+export function LinhaPressionavel({
+  children,
+  selecionada,
+  ...rest
+}: PressableProps & { children: ReactNode; selecionada?: boolean }) {
+  const theme = useTheme()
+
+  return (
+    <Pressable
+      {...rest}
+      accessibilityRole="button"
+      accessibilityState={{ ...rest.accessibilityState, selected: Boolean(selecionada) }}
+      style={({ pressed }) => [
+        styles.linha,
+        Platform.OS === 'web' ? styles.clicavelWeb : null,
+        {
+          borderColor: selecionada ? theme.primary : theme.border,
+          backgroundColor: theme.card,
+          minHeight: MinTouch,
+          opacity: pressed ? 0.88 : 1,
+        },
+      ]}
+    >
+      {children}
+    </Pressable>
+  )
+}
+
 export function AvisoAparelho({ texto }: { texto: string }) {
   const theme = useTheme()
 
@@ -133,6 +168,13 @@ const styles = StyleSheet.create({
   },
   botaoSecundario: {
     alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  linha: {
+    padding: Spacing.md,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    gap: Spacing.xs,
     justifyContent: 'center',
   },
   aviso: {

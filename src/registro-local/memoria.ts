@@ -6,6 +6,7 @@ export function persistenciaEmMemoria(
 ): Persistencia {
   let atividades = atividadesIniciais.map((atividade) => ({ ...atividade }))
   let atendimentos = atendimentosIniciais.map((atendimento) => ({ ...atendimento }))
+  let atividadeVigenteId: string | null = null
 
   return {
     async carregarAtividades() {
@@ -19,6 +20,12 @@ export function persistenciaEmMemoria(
     },
     async gravarAtendimentos(proxima) {
       atendimentos = proxima.map((atendimento) => ({ ...atendimento }))
+    },
+    async carregarAtividadeVigenteId() {
+      return atividadeVigenteId
+    },
+    async gravarAtividadeVigenteId(id) {
+      atividadeVigenteId = id
     },
   }
 }

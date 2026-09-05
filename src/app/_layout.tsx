@@ -68,10 +68,8 @@ export default function LayoutRaiz() {
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="login" options={{ title: copia.loginTitulo }} />
           <Stack.Screen name="esqueci-a-senha" options={{ title: copia.esqueciTitulo }} />
-          <Stack.Screen
-            name="atividades"
-            options={{ title: copia.atividadesTitulo, headerBackVisible: false }}
-          />
+          <Stack.Screen name="(app)" options={{ headerShown: false }} />
+          <Stack.Screen name="atendimento/[id]" options={{ title: copia.detalheTitulo }} />
           <Stack.Screen name="+not-found" options={{ title: 'Não encontrado' }} />
         </Stack>
       </BaseLocalProvider>

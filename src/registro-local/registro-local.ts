@@ -27,14 +27,30 @@ export function criarRegistroLocal(persistencia: Persistencia): RegistroLocal {
       await persistencia.gravarAtividades(sementes)
       return sementes
     },
+    async obterAtividadeVigente() {
+      const vigenteId = await persistencia.carregarAtividadeVigenteId()
+      if (!vigenteId) {
+        return null
+      }
+      const atividades = await persistencia.carregarAtividades()
+      return atividades.find((atividade) => atividade.id === vigenteId) ?? null
+    },
+    async definirAtividadeVigente(atividadeId) {
+      const atividades = await persistencia.carregarAtividades()
+      if (!atividades.some((atividade) => atividade.id === atividadeId)) {
+        throw new Error('Atividade vigente precisa existir neste aparelho')
+      }
+      await persistencia.gravarAtividadeVigenteId(atividadeId)
+    },
     async criarAtendimento(dados) {
       const atividades = await persistencia.carregarAtividades()
-      if (!atividades.some((atividade) => atividade.id === dados.atividadeId)) {
+      const atividadeId = dados.atividadeId || (await persistencia.carregarAtividadeVigenteId())
+      if (!atividadeId || !atividades.some((atividade) => atividade.id === atividadeId)) {
         throw new Error('Atendimento precisa de uma Atividade')
       }
       const atendimento: Atendimento = {
         id: crypto.randomUUID(),
-        atividadeId: dados.atividadeId,
+        atividadeId,
         criadoEm: new Date().toISOString(),
         ...(dados.nome ? { nome: dados.nome } : {}),
         ...(dados.cpf ? { cpf: dados.cpf } : {}),
@@ -46,6 +62,10 @@ export function criarRegistroLocal(persistencia: Persistencia): RegistroLocal {
     async listarAtendimentos() {
       const atendimentos = await persistencia.carregarAtendimentos()
       return [...atendimentos].reverse().sort((a, b) => b.criadoEm.localeCompare(a.criadoEm))
+    },
+    async obterAtendimento(id) {
+      const atendimentos = await persistencia.carregarAtendimentos()
+      return atendimentos.find((atendimento) => atendimento.id === id) ?? null
     },
     async indicadores() {
       const atendimentos = await persistencia.carregarAtendimentos()

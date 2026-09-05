@@ -238,4 +238,68 @@ describe('RegistroLocal', () => {
     expect(await segundo.listarAtendimentos()).toEqual(await primeiro.listarAtendimentos())
     expect((await segundo.indicadores()).totalAtendimentos).toBe(1)
   })
+
+  test('escolhe a Atividade vigente neste aparelho e ela fica disponível', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    const [atividade] = await registro.listarAtividades()
+
+    await registro.definirAtividadeVigente(atividade.id)
+
+    expect(await registro.obterAtividadeVigente()).toEqual(atividade)
+  })
+
+  test('reabrir o aparelho preserva a Atividade vigente', async () => {
+    const persistencia = persistenciaEmMemoria()
+    const primeiraAbertura = criarRegistroLocal(persistencia)
+    const [atividade] = await primeiraAbertura.listarAtividades()
+    await primeiraAbertura.definirAtividadeVigente(atividade.id)
+
+    expect(await criarRegistroLocal(persistencia).obterAtividadeVigente()).toEqual(atividade)
+  })
+
+  test('Atendimentos seguintes herdam a Atividade vigente até o Operador trocá-la', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    const [primeira, segunda] = await registro.listarAtividades()
+    await registro.definirAtividadeVigente(primeira.id)
+
+    const primeiro = await registro.criarAtendimento({})
+    const segundo = await registro.criarAtendimento({})
+    await registro.definirAtividadeVigente(segunda.id)
+    const terceiro = await registro.criarAtendimento({})
+
+    expect(primeiro.atividadeId).toBe(primeira.id)
+    expect(segundo.atividadeId).toBe(primeira.id)
+    expect(terceiro.atividadeId).toBe(segunda.id)
+    expect((await registro.obterAtividadeVigente())?.id).toBe(segunda.id)
+  })
+
+  test('recusa gravar Atendimento sem Atividade vigente', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    await registro.listarAtividades()
+
+    await expect(registro.criarAtendimento({})).rejects.toThrow(
+      'Atendimento precisa de uma Atividade',
+    )
+    expect(await registro.listarAtendimentos()).toHaveLength(0)
+  })
+
+  test('obtém o Atendimento pelo id para conferência só leitura', async () => {
+    const registro = criarRegistroLocal(persistenciaEmMemoria())
+    const [atividade] = await registro.listarAtividades()
+    await registro.definirAtividadeVigente(atividade.id)
+    const gravado = await registro.criarAtendimento({})
+
+    expect(await registro.obterAtendimento(gravado.id)).toEqual(gravado)
+    expect(await registro.obterAtendimento('inexistente')).toBeNull()
+  })
+
+  test('dois Operadores no mesmo aparelho veem a mesma Atividade vigente', async () => {
+    const persistencia = persistenciaEmMemoria()
+    const primeiro = criarRegistroLocal(persistencia)
+    const segundo = criarRegistroLocal(persistencia)
+    const [atividade] = await primeiro.listarAtividades()
+    await primeiro.definirAtividadeVigente(atividade.id)
+
+    expect(await segundo.obterAtividadeVigente()).toEqual(await primeiro.obterAtividadeVigente())
+  })
 })

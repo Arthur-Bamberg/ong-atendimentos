@@ -26,7 +26,7 @@ export default function TelaLogin() {
     setEntrando(true)
     try {
       await fachada.marcarPassou()
-      router.replace('/atividades')
+      router.replace('/formulario')
     } finally {
       setEntrando(false)
     }

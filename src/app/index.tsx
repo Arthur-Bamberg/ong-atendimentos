@@ -9,7 +9,7 @@ import { useBaseLocal } from '@/ui/base-local-provider'
 export default function PortaDeEntrada() {
   const theme = useTheme()
   const { fachada } = useBaseLocal()
-  const [destino, setDestino] = useState<'/atividades' | '/login' | null>(null)
+  const [destino, setDestino] = useState<'/formulario' | '/login' | null>(null)
 
   useEffect(() => {
     let cancelado = false
@@ -17,7 +17,7 @@ export default function PortaDeEntrada() {
       .jaPassou()
       .then((passou) => {
         if (!cancelado) {
-          setDestino(passou ? '/atividades' : '/login')
+          setDestino(passou ? '/formulario' : '/login')
         }
       })
       .catch(() => {
