@@ -12,6 +12,7 @@
       "icon": "./assets/images/icon.png"
     },
     "android": {
+      "package": "org.caminhodobem.atendimentos",
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
