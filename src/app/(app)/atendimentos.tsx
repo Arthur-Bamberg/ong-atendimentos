@@ -43,7 +43,9 @@ export default function TelaAtendimentos() {
   if (erro) {
     return (
       <Tela edges={[]}>
-        <ThemedText tone="destructive">{erro}</ThemedText>
+        <ThemedText accessibilityRole="alert" tone="destructive">
+          {erro}
+        </ThemedText>
       </Tela>
     )
   }
@@ -58,9 +60,6 @@ export default function TelaAtendimentos() {
 
   return (
     <Tela edges={[]}>
-      <ThemedText type="title" accessibilityRole="header">
-        {copia.atendimentosTitulo}
-      </ThemedText>
       {atendimentos.length === 0 ? (
         <>
           <ThemedText>{copia.listaVazia}</ThemedText>

@@ -8,7 +8,7 @@ import { useTheme } from '@/hooks/use-theme'
 import type { Atividade, Bucket, Indicadores } from '@/registro-local/tipos'
 import { useBaseLocal } from '@/ui/base-local-provider'
 import { copia } from '@/ui/copia'
-import { Aviso, LinhaPressionavel, Tela } from '@/ui/tela'
+import { Grupo, LinhaPressionavel, Tela } from '@/ui/tela'
 
 export default function TelaGraficos() {
   const theme = useTheme()
@@ -46,7 +46,9 @@ export default function TelaGraficos() {
   if (erro) {
     return (
       <Tela edges={[]}>
-        <ThemedText tone="destructive">{erro}</ThemedText>
+        <ThemedText accessibilityRole="alert" tone="destructive">
+          {erro}
+        </ThemedText>
       </Tela>
     )
   }
@@ -61,35 +63,36 @@ export default function TelaGraficos() {
 
   return (
     <Tela edges={[]}>
-      <ThemedText type="title" accessibilityRole="header">
-        {copia.graficosTitulo}
-      </ThemedText>
-      <Aviso texto={copia.informativoIdentificacao} />
-      <ThemedText type="kicker">{copia.atendimentosTitulo}</ThemedText>
-      <ThemedText
-        accessibilityLabel={`${indicadores.totalAtendimentos} ${copia.atendimentosTitulo}`}
-        style={styles.total}
-      >
-        {indicadores.totalAtendimentos}
-      </ThemedText>
-      <ThemedText type="label">{copia.filtroAtividade}</ThemedText>
-      <LinhaPressionavel
-        accessibilityLabel={copia.todasAtividades}
-        onPress={() => setAtividadeId(undefined)}
-        selecionada={atividadeId === undefined}
-      >
-        <ThemedText>{copia.todasAtividades}</ThemedText>
-      </LinhaPressionavel>
-      {atividades.map((atividade) => (
-        <LinhaPressionavel
-          key={atividade.id}
-          accessibilityLabel={atividade.nome}
-          onPress={() => setAtividadeId(atividade.id)}
-          selecionada={atividadeId === atividade.id}
+      <Grupo>
+        <ThemedText type="label">{copia.atendimentosTitulo}</ThemedText>
+        <ThemedText
+          accessibilityLabel={`${indicadores.totalAtendimentos} ${copia.atendimentosTitulo}`}
+          style={styles.total}
+          tone="primary"
         >
-          <ThemedText>{atividade.nome}</ThemedText>
+          {indicadores.totalAtendimentos}
+        </ThemedText>
+      </Grupo>
+      <Grupo>
+        <ThemedText type="label">{copia.filtroAtividade}</ThemedText>
+        <LinhaPressionavel
+          accessibilityLabel={copia.todasAtividades}
+          onPress={() => setAtividadeId(undefined)}
+          selecionada={atividadeId === undefined}
+        >
+          <ThemedText>{copia.todasAtividades}</ThemedText>
         </LinhaPressionavel>
-      ))}
+        {atividades.map((atividade) => (
+          <LinhaPressionavel
+            key={atividade.id}
+            accessibilityLabel={atividade.nome}
+            onPress={() => setAtividadeId(atividade.id)}
+            selecionada={atividadeId === atividade.id}
+          >
+            <ThemedText>{atividade.nome}</ThemedText>
+          </LinhaPressionavel>
+        ))}
+      </Grupo>
       {indicadores.totalAtendimentos === 0 ? (
         <ThemedText>{copia.graficosVazio}</ThemedText>
       ) : (
@@ -130,7 +133,7 @@ function RecorteBarras({
   }
 
   return (
-    <View style={styles.recorte}>
+    <Grupo>
       <ThemedText type="label">{titulo}</ThemedText>
       {buckets.map((bucket) => {
         const largura = total === 0 ? 0 : (bucket.quantidade / total) * 100
@@ -156,19 +159,15 @@ function RecorteBarras({
           </View>
         )
       })}
-    </View>
+    </Grupo>
   )
 }
 
 const styles = StyleSheet.create({
   total: {
     fontFamily: Fonts.headingBold,
-    fontSize: 56,
-    lineHeight: 64,
-  },
-  recorte: {
-    gap: Spacing.sm,
-    marginTop: Spacing.sm,
+    fontSize: 36,
+    lineHeight: 44,
   },
   barraBloco: {
     gap: Spacing.xs,

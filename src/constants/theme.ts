@@ -2,36 +2,36 @@ import { Platform } from 'react-native'
 
 export const Colors = {
   light: {
-    background: '#F8FAFC',
-    foreground: '#1E293B',
+    background: '#FFFFFF',
+    foreground: '#3A1A36',
     card: '#FFFFFF',
-    cardForeground: '#1E293B',
-    muted: '#E9EFF8',
-    mutedForeground: '#475569',
-    border: '#E2E8F0',
-    primary: '#2563EB',
+    cardForeground: '#3A1A36',
+    muted: '#F6E8F1',
+    mutedForeground: '#6B4A66',
+    border: '#B07086',
+    primary: '#5F2357',
     onPrimary: '#FFFFFF',
-    accent: '#EA580C',
-    onAccent: '#000000',
+    accent: '#EAB92E',
+    onAccent: '#3A1A36',
     destructive: '#DC2626',
     onDestructive: '#FFFFFF',
-    ring: '#2563EB',
+    ring: '#5F2357',
   },
   dark: {
-    background: '#0F172A',
-    foreground: '#F1F5F9',
-    card: '#1E293B',
-    cardForeground: '#F1F5F9',
-    muted: '#334155',
-    mutedForeground: '#CBD5E1',
-    border: '#475569',
-    primary: '#2563EB',
-    onPrimary: '#FFFFFF',
-    accent: '#FB923C',
-    onAccent: '#000000',
+    background: '#1A0F18',
+    foreground: '#F8F1F6',
+    card: '#2A1826',
+    cardForeground: '#F8F1F6',
+    muted: '#3D2438',
+    mutedForeground: '#D4B8CE',
+    border: '#8A6268',
+    primary: '#C48BB8',
+    onPrimary: '#1A0F18',
+    accent: '#EAB92E',
+    onAccent: '#1A0F18',
     destructive: '#F87171',
-    onDestructive: '#000000',
-    ring: '#60A5FA',
+    onDestructive: '#1A0F18',
+    ring: '#C48BB8',
   },
 } as const
 
@@ -59,8 +59,10 @@ export const Spacing = {
 export const Radius = {
   sm: 8,
   md: 12,
+  lg: 16,
 } as const
 
 export const MinTouch = Platform.select({ ios: 44, android: 48, default: 48 }) ?? 48
 export const MaxContentWidth = 560
 export const MotionMs = 150
+export const LogoMarcaAspecto = 1460 / 647

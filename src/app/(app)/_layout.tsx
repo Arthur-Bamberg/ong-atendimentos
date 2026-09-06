@@ -30,8 +30,8 @@ export default function LayoutApp() {
         options={{
           title: copia.formularioTitulo,
           tabBarLabel: copia.formularioAba,
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="create-outline" color={color} size={size} />
+          tabBarIcon: ({ color, focused, size }) => (
+            <Ionicons color={color} name={focused ? 'create' : 'create-outline'} size={size} />
           ),
         }}
       />
@@ -40,8 +40,8 @@ export default function LayoutApp() {
         options={{
           title: copia.atendimentosTitulo,
           tabBarLabel: copia.atendimentosAba,
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="list-outline" color={color} size={size} />
+          tabBarIcon: ({ color, focused, size }) => (
+            <Ionicons color={color} name={focused ? 'list' : 'list-outline'} size={size} />
           ),
         }}
       />
@@ -50,8 +50,12 @@ export default function LayoutApp() {
         options={{
           title: copia.graficosTitulo,
           tabBarLabel: copia.graficosAba,
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="bar-chart-outline" color={color} size={size} />
+          tabBarIcon: ({ color, focused, size }) => (
+            <Ionicons
+              color={color}
+              name={focused ? 'bar-chart' : 'bar-chart-outline'}
+              size={size}
+            />
           ),
         }}
       />
@@ -60,8 +64,8 @@ export default function LayoutApp() {
         options={{
           title: copia.atividadesTitulo,
           tabBarLabel: copia.atividadesAba,
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="layers-outline" color={color} size={size} />
+          tabBarIcon: ({ color, focused, size }) => (
+            <Ionicons color={color} name={focused ? 'layers' : 'layers-outline'} size={size} />
           ),
         }}
       />

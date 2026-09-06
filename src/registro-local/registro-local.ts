@@ -72,6 +72,25 @@ function dataLocalHoje(): string {
   return `${agora.getFullYear()}-${mes}-${dia}`
 }
 
+function novoId(): string {
+  const webCrypto = globalThis.crypto
+  if (typeof webCrypto?.randomUUID === 'function') {
+    return webCrypto.randomUUID()
+  }
+  const bytes = new Uint8Array(16)
+  if (typeof webCrypto?.getRandomValues === 'function') {
+    webCrypto.getRandomValues(bytes)
+  } else {
+    for (let i = 0; i < bytes.length; i += 1) {
+      bytes[i] = Math.floor(Math.random() * 256)
+    }
+  }
+  bytes[6] = (bytes[6] & 0x0f) | 0x40
+  bytes[8] = (bytes[8] & 0x3f) | 0x80
+  const hex = [...bytes].map((byte) => byte.toString(16).padStart(2, '0')).join('')
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
+}
+
 function bucketsDe(valores: (string | undefined)[], ordem?: readonly string[]): Bucket[] {
   if (valores.length === 0) {
     return []
@@ -154,7 +173,7 @@ export function criarRegistroLocal(persistencia: Persistencia): RegistroLocal {
 
     const agora = new Date().toISOString()
     const sementes: Atividade[] = NOMES_SEMENTE.map((nome) => ({
-      id: crypto.randomUUID(),
+      id: novoId(),
       nome,
       criadaEm: agora,
       atualizadaEm: agora,
@@ -171,7 +190,7 @@ export function criarRegistroLocal(persistencia: Persistencia): RegistroLocal {
       const atividades = await catalogo()
       const agora = new Date().toISOString()
       const atividade: Atividade = {
-        id: crypto.randomUUID(),
+        id: novoId(),
         nome,
         criadaEm: agora,
         atualizadaEm: agora,
@@ -235,7 +254,7 @@ export function criarRegistroLocal(persistencia: Persistencia): RegistroLocal {
       const programasSociais = programasCanonicos(dados.programasSociais)
       const observacaoProgramasSociais = textoOpcional(dados.observacaoProgramasSociais)
       const atendimento: Atendimento = {
-        id: crypto.randomUUID(),
+        id: novoId(),
         atividadeId,
         criadoEm: new Date().toISOString(),
         ...(nome ? { nome } : {}),

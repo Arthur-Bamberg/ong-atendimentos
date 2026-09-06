@@ -49,7 +49,9 @@ export function BaseLocalProvider({ children }: { children: ReactNode }) {
   if (erro) {
     return (
       <ThemedView style={styles.centralizado}>
-        <ThemedText tone="destructive">{erro}</ThemedText>
+        <ThemedText accessibilityRole="alert" tone="destructive">
+          {erro}
+        </ThemedText>
       </ThemedView>
     )
   }

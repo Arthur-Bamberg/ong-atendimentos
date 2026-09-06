@@ -4,7 +4,7 @@ import { Fonts, type TextTone } from '@/constants/theme'
 import { useTheme } from '@/hooks/use-theme'
 
 export type ThemedTextProps = TextProps & {
-  type?: 'kicker' | 'title' | 'body' | 'label' | 'link'
+  type?: 'title' | 'body' | 'label' | 'link'
   tone?: TextTone
 }
 
@@ -16,7 +16,6 @@ export function ThemedText({ style, type = 'body', tone, ...rest }: ThemedTextPr
     <Text
       style={[
         { color: theme[colorKey] },
-        type === 'kicker' && styles.kicker,
         type === 'title' && styles.title,
         type === 'body' && styles.body,
         type === 'label' && styles.label,
@@ -29,13 +28,6 @@ export function ThemedText({ style, type = 'body', tone, ...rest }: ThemedTextPr
 }
 
 const styles = StyleSheet.create({
-  kicker: {
-    fontFamily: Fonts.bodySemi,
-    fontSize: 14,
-    lineHeight: 20,
-    letterSpacing: 0.4,
-    textTransform: 'uppercase',
-  },
   title: {
     fontFamily: Fonts.heading,
     fontSize: 28,

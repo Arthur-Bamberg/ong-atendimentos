@@ -1,6 +1,6 @@
 import { useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
-import { ActivityIndicator, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native'
+import { ActivityIndicator, StyleSheet, TextInput, View } from 'react-native'
 
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
@@ -9,7 +9,7 @@ import { useTheme } from '@/hooks/use-theme'
 import type { Atividade } from '@/registro-local/tipos'
 import { useBaseLocal } from '@/ui/base-local-provider'
 import { copia } from '@/ui/copia'
-import { AvisoAparelho, BotaoPrincipal, Tela } from '@/ui/tela'
+import { AvisoAparelho, BotaoContorno, BotaoPrincipal, CampoTexto, Tela } from '@/ui/tela'
 
 export default function TelaAtividades() {
   const theme = useTheme()
@@ -21,7 +21,6 @@ export default function TelaAtividades() {
   const [nomeEdicao, setNomeEdicao] = useState('')
   const [erro, setErro] = useState<string | null>(null)
   const [ocupado, setOcupado] = useState<'criar' | 'renomear' | 'apagar' | null>(null)
-  const [focoNovo, setFocoNovo] = useState(false)
   const [focoEdicao, setFocoEdicao] = useState(false)
 
   const recarregar = useCallback(async () => {
@@ -120,7 +119,9 @@ export default function TelaAtividades() {
   if (erro && !atividades) {
     return (
       <Tela edges={[]}>
-        <ThemedText tone="destructive">{erro}</ThemedText>
+        <ThemedText accessibilityRole="alert" tone="destructive">
+          {erro}
+        </ThemedText>
       </Tela>
     )
   }
@@ -135,29 +136,17 @@ export default function TelaAtividades() {
 
   return (
     <Tela edges={[]}>
-      <ThemedText type="title" accessibilityRole="header">
-        {copia.atividadesTitulo}
-      </ThemedText>
       <AvisoAparelho texto={copia.avisoCatalogo} />
-      {erro ? <ThemedText tone="destructive">{erro}</ThemedText> : null}
+      {erro ? (
+        <ThemedText accessibilityRole="alert" tone="destructive">
+          {erro}
+        </ThemedText>
+      ) : null}
 
-      <ThemedText type="label">{copia.novaAtividade}</ThemedText>
-      <TextInput
-        accessibilityLabel={copia.novaAtividade}
-        onBlur={() => setFocoNovo(false)}
+      <CampoTexto
         onChangeText={setNomeNovo}
-        onFocus={() => setFocoNovo(true)}
         placeholder={copia.nome}
-        placeholderTextColor={theme.mutedForeground}
-        style={[
-          styles.campo,
-          {
-            color: theme.foreground,
-            backgroundColor: theme.card,
-            borderColor: focoNovo ? theme.ring : theme.border,
-            minHeight: MinTouch,
-          },
-        ]}
+        rotulo={copia.novaAtividade}
         value={nomeNovo}
       />
       <BotaoPrincipal
@@ -203,61 +192,39 @@ export default function TelaAtividades() {
                   ocupado={ocupado === 'renomear'}
                   rotulo={copia.guardarNome}
                 />
-                <Pressable
-                  accessibilityRole="button"
+                <BotaoContorno
+                  disabled={ocupado !== null}
                   onPress={() => {
                     setEditandoId(null)
                     setNomeEdicao('')
                   }}
-                  style={({ pressed }) => [
-                    styles.acao,
-                    Platform.OS === 'web' ? styles.clicavelWeb : null,
-                    { opacity: pressed ? 0.7 : 1 },
-                  ]}
-                >
-                  <ThemedText type="link">{copia.cancelar}</ThemedText>
-                </Pressable>
+                  rotulo={copia.cancelar}
+                />
               </>
             ) : (
               <>
                 <ThemedText>{atividade.nome}</ThemedText>
                 <View style={styles.acoes}>
-                  <Pressable
+                  <BotaoContorno
                     accessibilityLabel={`${copia.renomear} ${atividade.nome}`}
-                    accessibilityRole="button"
+                    disabled={ocupado !== null}
                     onPress={() => {
                       setEditandoId(atividade.id)
                       setNomeEdicao(atividade.nome)
                       setErro(null)
                     }}
-                    style={({ pressed }) => [
-                      styles.acao,
-                      Platform.OS === 'web' ? styles.clicavelWeb : null,
-                      { opacity: pressed ? 0.7 : 1 },
-                    ]}
-                  >
-                    <ThemedText type="link">{copia.renomear}</ThemedText>
-                  </Pressable>
-                  <Pressable
+                    rotulo={copia.renomear}
+                    style={styles.acaoNaFila}
+                  />
+                  <BotaoContorno
                     accessibilityHint={temAtendimento ? copia.apagarComAtendimento : undefined}
                     accessibilityLabel={`${copia.apagar} ${atividade.nome}`}
-                    accessibilityRole="button"
-                    accessibilityState={{ disabled: apagarInativo }}
                     disabled={apagarInativo}
                     onPress={() => apagar(atividade.id)}
-                    style={({ pressed }) => [
-                      styles.acao,
-                      Platform.OS === 'web' ? styles.clicavelWeb : null,
-                      { opacity: apagarInativo ? 0.5 : pressed ? 0.7 : 1 },
-                    ]}
-                  >
-                    <ThemedText
-                      type="link"
-                      tone={temAtendimento ? 'mutedForeground' : 'destructive'}
-                    >
-                      {copia.apagar}
-                    </ThemedText>
-                  </Pressable>
+                    rotulo={copia.apagar}
+                    style={styles.acaoNaFila}
+                    tom="destructive"
+                  />
                 </View>
               </>
             )}
@@ -286,13 +253,10 @@ const styles = StyleSheet.create({
   acoes: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: Spacing.md,
+    gap: Spacing.sm,
   },
-  acao: {
-    minHeight: MinTouch,
-    justifyContent: 'center',
-  },
-  clicavelWeb: {
-    cursor: 'pointer',
+  acaoNaFila: {
+    flexGrow: 1,
+    flexBasis: 120,
   },
 })

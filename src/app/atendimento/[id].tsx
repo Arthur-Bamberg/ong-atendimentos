@@ -15,7 +15,7 @@ import {
 } from '@/ui/atendimento'
 import { useBaseLocal } from '@/ui/base-local-provider'
 import { copia } from '@/ui/copia'
-import { Tela } from '@/ui/tela'
+import { Grupo, Tela } from '@/ui/tela'
 
 export default function TelaDetalheAtendimento() {
   const theme = useTheme()
@@ -53,7 +53,9 @@ export default function TelaDetalheAtendimento() {
   if (erro) {
     return (
       <Tela>
-        <ThemedText tone="destructive">{erro}</ThemedText>
+        <ThemedText accessibilityRole="alert" tone="destructive">
+          {erro}
+        </ThemedText>
       </Tela>
     )
   }
@@ -69,16 +71,15 @@ export default function TelaDetalheAtendimento() {
   if (!atendimento) {
     return (
       <Tela>
-        <ThemedText tone="destructive">{copia.erroAtendimento}</ThemedText>
+        <ThemedText accessibilityRole="alert" tone="destructive">
+          {copia.erroAtendimento}
+        </ThemedText>
       </Tela>
     )
   }
 
   return (
     <Tela>
-      <ThemedText type="title" accessibilityRole="header">
-        {copia.detalheTitulo}
-      </ThemedText>
       <CampoDetalhe
         rotulo={copia.dataDoAtendimento}
         valor={valorDoCampo(
@@ -129,9 +130,9 @@ export default function TelaDetalheAtendimento() {
 
 function CampoDetalhe({ rotulo, valor }: { rotulo: string; valor: string }) {
   return (
-    <>
+    <Grupo>
       <ThemedText type="label">{rotulo}</ThemedText>
       <ThemedText>{valor}</ThemedText>
-    </>
+    </Grupo>
   )
 }

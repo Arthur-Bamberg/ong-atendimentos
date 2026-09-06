@@ -1,6 +1,30 @@
+html,
+body,
+#root {
+  background: #ffffff;
+}
+
 :root {
   --font-display: Outfit, ui-sans-serif, system-ui, sans-serif;
   --font-body: 'Work Sans', ui-sans-serif, system-ui, sans-serif;
   --font-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+  --color-primary: #5f2357;
+  --color-on-primary: #ffffff;
+  --color-accent: #eab92e;
+  --color-on-accent: #3a1a36;
+  --color-background: #ffffff;
+  --color-foreground: #3a1a36;
+  --color-card: #ffffff;
+  --color-muted: #f6e8f1;
+  --color-muted-foreground: #6b4a66;
+  --color-border: #b07086;
+  --color-destructive: #dc2626;
+  --color-ring: #5f2357;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
 }

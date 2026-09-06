@@ -45,6 +45,10 @@ type LinhaPreferencia = {
   valor: string
 }
 
+const NOME_BASE = 'base-local.db'
+
+let abertura: Promise<BaseNesteAparelho> | null = null
+
 const COLUNAS_ATENDIMENTO = [
   ['data_nascimento', 'TEXT'],
   ['raca_cor', 'TEXT'],
@@ -60,8 +64,18 @@ const COLUNAS_ATENDIMENTO = [
   ['data_do_atendimento', 'TEXT'],
 ] as const
 
-export async function abrirBaseNesteAparelho(): Promise<BaseNesteAparelho> {
-  const db = await SQLite.openDatabaseAsync('base-local.db')
+export function abrirBaseNesteAparelho(): Promise<BaseNesteAparelho> {
+  if (!abertura) {
+    abertura = abrirNovaBase().catch((erro: unknown) => {
+      abertura = null
+      throw erro
+    })
+  }
+  return abertura
+}
+
+async function abrirNovaBase(): Promise<BaseNesteAparelho> {
+  const db = await SQLite.openDatabaseAsync(NOME_BASE, { useNewConnection: true })
 
   await db.execAsync(`
     CREATE TABLE IF NOT EXISTS atividades (
@@ -97,18 +111,15 @@ export async function abrirBaseNesteAparelho(): Promise<BaseNesteAparelho> {
       }))
     },
     async gravarAtividades(atividades: Atividade[]) {
-      await db.withExclusiveTransactionAsync(async (txn) => {
-        await txn.runAsync('DELETE FROM atividades')
+      await db.withTransactionAsync(async () => {
+        await db.runAsync('DELETE FROM atividades')
         for (const atividade of atividades) {
-          await txn.runAsync(
+          await db.runAsync(
             'INSERT INTO atividades (id, nome, criada_em, atualizada_em) VALUES (?, ?, ?, ?)',
-            atividade.id,
-            atividade.nome,
-            atividade.criadaEm,
-            atividade.atualizadaEm,
+            [atividade.id, atividade.nome, atividade.criadaEm, atividade.atualizadaEm],
           )
         }
-        await txn.runAsync(
+        await db.runAsync(
           "INSERT OR REPLACE INTO preferencias (chave, valor) VALUES ('catalogo_iniciado', 'sim')",
         )
       })
@@ -136,33 +147,35 @@ export async function abrirBaseNesteAparelho(): Promise<BaseNesteAparelho> {
       return linhas.map(atendimentoDaLinha)
     },
     async gravarAtendimentos(atendimentos: Atendimento[]) {
-      await db.withExclusiveTransactionAsync(async (txn) => {
-        await txn.runAsync('DELETE FROM atendimentos')
+      await db.withTransactionAsync(async () => {
+        await db.runAsync('DELETE FROM atendimentos')
         for (const atendimento of atendimentos) {
-          await txn.runAsync(
+          await db.runAsync(
             `INSERT INTO atendimentos (
                id, atividade_id, nome, cpf, data_nascimento, raca_cor, escolaridade, faixa_renda,
                cidade, bairro, situacao_rua, uso_substancias, programas_sociais,
                observacao_programas_sociais, pode_participar_programas_sociais,
                data_do_atendimento, criado_em
              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            atendimento.id,
-            atendimento.atividadeId,
-            atendimento.nome ?? null,
-            atendimento.cpf ?? null,
-            atendimento.dataNascimento ?? null,
-            atendimento.racaCor ?? null,
-            atendimento.escolaridade ?? null,
-            atendimento.faixaRenda ?? null,
-            atendimento.cidade ?? null,
-            atendimento.bairro ?? null,
-            atendimento.situacaoRua ?? null,
-            atendimento.usoSubstancias ?? null,
-            atendimento.programasSociais ? JSON.stringify(atendimento.programasSociais) : null,
-            atendimento.observacaoProgramasSociais ?? null,
-            atendimento.podeParticiparProgramasSociais ? 'sim' : null,
-            atendimento.dataDoAtendimento ?? null,
-            atendimento.criadoEm,
+            [
+              atendimento.id,
+              atendimento.atividadeId,
+              atendimento.nome ?? null,
+              atendimento.cpf ?? null,
+              atendimento.dataNascimento ?? null,
+              atendimento.racaCor ?? null,
+              atendimento.escolaridade ?? null,
+              atendimento.faixaRenda ?? null,
+              atendimento.cidade ?? null,
+              atendimento.bairro ?? null,
+              atendimento.situacaoRua ?? null,
+              atendimento.usoSubstancias ?? null,
+              atendimento.programasSociais ? JSON.stringify(atendimento.programasSociais) : null,
+              atendimento.observacaoProgramasSociais ?? null,
+              atendimento.podeParticiparProgramasSociais ? 'sim' : null,
+              atendimento.dataDoAtendimento ?? null,
+              atendimento.criadoEm,
+            ],
           )
         }
       })

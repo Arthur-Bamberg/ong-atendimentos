@@ -23,11 +23,11 @@ import { dataLocalHojeIso, isoParaPt, mascararCpf, mascararData, ptParaIso } fro
 import { useBaseLocal } from '@/ui/base-local-provider'
 import { copia } from '@/ui/copia'
 import {
-  Aviso,
   BotaoPrincipal,
   CampoTexto,
   EscolhaFechada,
   EscolhaMultipla,
+  Grupo,
   LinhaPressionavel,
   Marcacao,
   Tela,
@@ -153,7 +153,17 @@ export default function TelaFormulario() {
     }
   }
 
-  if (!atividades && !erro) {
+  if (erro && !atividades) {
+    return (
+      <Tela edges={[]}>
+        <ThemedText accessibilityRole="alert" tone="destructive">
+          {erro}
+        </ThemedText>
+      </Tela>
+    )
+  }
+
+  if (!atividades) {
     return (
       <Tela edges={[]}>
         <ActivityIndicator color={theme.primary} accessibilityLabel={copia.carregando} />
@@ -163,24 +173,21 @@ export default function TelaFormulario() {
 
   return (
     <Tela edges={[]}>
-      <ThemedText type="title" accessibilityRole="header">
-        {copia.formularioTitulo}
-      </ThemedText>
-      <Aviso texto={copia.informativoIdentificacao} />
-      <ThemedText type="label">
-        {copia.atividadeVigente} ({copia.obrigatoria})
-      </ThemedText>
-      {erro ? <ThemedText tone="destructive">{erro}</ThemedText> : null}
-      {atividades?.map((atividade) => (
-        <LinhaPressionavel
-          key={atividade.id}
-          accessibilityLabel={atividade.nome}
-          onPress={() => escolherVigente(atividade.id)}
-          selecionada={atividade.id === vigenteId}
-        >
-          <ThemedText>{atividade.nome}</ThemedText>
-        </LinhaPressionavel>
-      ))}
+      <Grupo>
+        <ThemedText type="label">
+          {copia.atividadeVigente} ({copia.obrigatoria})
+        </ThemedText>
+        {atividades.map((atividade) => (
+          <LinhaPressionavel
+            key={atividade.id}
+            accessibilityLabel={atividade.nome}
+            onPress={() => escolherVigente(atividade.id)}
+            selecionada={atividade.id === vigenteId}
+          >
+            <ThemedText>{atividade.nome}</ThemedText>
+          </LinhaPressionavel>
+        ))}
+      </Grupo>
       <CampoTexto
         autoCapitalize="words"
         onChangeText={(valor) => atualizar('nome', valor)}
@@ -274,7 +281,11 @@ export default function TelaFormulario() {
         rotulo={rotuloOpcional(copia.dataDoAtendimento)}
         value={rascunho.dataDoAtendimento}
       />
-      {erro ? <ThemedText tone="destructive">{erro}</ThemedText> : null}
+      {erro ? (
+        <ThemedText accessibilityRole="alert" tone="destructive">
+          {erro}
+        </ThemedText>
+      ) : null}
       <BotaoPrincipal onPress={gravar} ocupado={gravando} rotulo={copia.gravarAtendimento} />
     </Tela>
   )

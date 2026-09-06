@@ -30,6 +30,26 @@ describe('RegistroLocal', () => {
     expect(nomes).toEqual(NOMES_SEMENTE)
   })
 
+  test('na primeira abertura sem Web Crypto ainda existem as seis Atividades semente', async () => {
+    const original = globalThis.crypto
+    Object.defineProperty(globalThis, 'crypto', {
+      configurable: true,
+      value: undefined,
+    })
+    try {
+      const registro = criarRegistroLocal(persistenciaEmMemoria())
+      const lista = await registro.listarAtividades()
+
+      expect(lista.map((atividade) => atividade.nome)).toEqual(NOMES_SEMENTE)
+      expect(new Set(lista.map((atividade) => atividade.id)).size).toBe(6)
+    } finally {
+      Object.defineProperty(globalThis, 'crypto', {
+        configurable: true,
+        value: original,
+      })
+    }
+  })
+
   test('reabrir o catálogo já gravado não duplica nem substitui as Atividades', async () => {
     const persistencia = persistenciaEmMemoria()
     const primeiraAbertura = criarRegistroLocal(persistencia)

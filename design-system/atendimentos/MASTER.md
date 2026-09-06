@@ -6,10 +6,11 @@
 
 ---
 
-**Project:** Atendimentos
-**Generated:** 2026-09-05 06:13:25
-**Category:** General
-**Design Dials:** Variance 3/10 (Centered / Minimal) | Motion 2/10 (Subtle) | Density 5/10 (Standard)
+**Project:** Atendimentos — Caminho do bem OSC
+**Updated:** 2026-09-05
+**Category:** Nonprofit field tool (mobile-first)
+**Design Dials:** Variance 3/10 (Centered / Minimal) | Motion 2/10 (Subtle) | Density 4/10 (Spacious)
+**Brand source:** official lockup (sun + heart + wordmark). Do not recolor, stretch, or replace the mark.
 
 ---
 
@@ -19,24 +20,22 @@
 
 | Role | Hex | CSS Variable |
 |------|-----|--------------|
-| Primary | `#2563EB` | `--color-primary` |
+| Primary | `#5F2357` | `--color-primary` |
 | On Primary | `#FFFFFF` | `--color-on-primary` |
-| Secondary | `#3B82F6` | `--color-secondary` |
-| On Secondary | `#000000` | `--color-on-secondary` |
-| Accent/CTA | `#EA580C` | `--color-accent` |
-| On Accent/CTA | `#000000` | `--color-on-accent` |
-| Background | `#F8FAFC` | `--color-background` |
-| Foreground | `#1E293B` | `--color-foreground` |
+| Accent (sun) | `#EAB92E` | `--color-accent` |
+| On Accent | `#3A1A36` | `--color-on-accent` |
+| Background | `#FFFFFF` | `--color-background` |
+| Foreground | `#3A1A36` | `--color-foreground` |
 | Card | `#FFFFFF` | `--color-card` |
-| Card Foreground | `#1E293B` | `--color-card-foreground` |
-| Muted | `#E9EFF8` | `--color-muted` |
-| Muted Foreground | `#475569` | `--color-muted-foreground` |
-| Border | `#E2E8F0` | `--color-border` |
+| Card Foreground | `#3A1A36` | `--color-card-foreground` |
+| Muted | `#F6E8F1` | `--color-muted` |
+| Muted Foreground | `#6B4A66` | `--color-muted-foreground` |
+| Border | `#B07086` | `--color-border` |
 | Destructive | `#DC2626` | `--color-destructive` |
 | On Destructive | `#FFFFFF` | `--color-on-destructive` |
-| Ring | `#2563EB` | `--color-ring` |
+| Ring | `#5F2357` | `--color-ring` |
 
-**Color Notes:** Trust blue + orange CTA contrast [Accent adjusted from #F97316]
+**Color Notes:** Primary is the logo plum (heart / “do bem”). Canvas is white; cards stay white and separate with the plum-rose hairline. Sun yellow is decorative only: it fails 4.5:1 and 3:1 on white, so it sits only in the official mark (sun, heart, “Caminho”). Primary button depth uses plum `#3A1A36`, not yellow. Dark primary is `#C48BB8` with on-primary `#1A0F18`.
 
 ### Typography
 
@@ -52,7 +51,7 @@
 
 ### Spacing Variables
 
-*Density: 5/10 — Standard*
+*Density: 4/10 — Spacious (phone-first, 24px gutters)*
 
 | Token | Value | Usage |
 |-------|-------|-------|
@@ -82,29 +81,30 @@
 ```css
 /* Primary Button */
 .btn-primary {
-  background: #EA580C;
-  color: white;
+  background: #5F2357;
+  color: #FFFFFF;
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: 12px;
+  border-bottom: 3px solid #3A1A36;
   font-weight: 600;
-  transition: all 200ms ease;
+  min-height: 48px;
+  transition: opacity 150ms ease;
   cursor: pointer;
 }
 
 .btn-primary:hover {
   opacity: 0.9;
-  transform: translateY(-1px);
 }
 
 /* Secondary Button */
 .btn-secondary {
   background: transparent;
-  color: #2563EB;
-  border: 2px solid #2563EB;
+  color: #5F2357;
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: 12px;
   font-weight: 600;
-  transition: all 200ms ease;
+  min-height: 48px;
+  transition: opacity 150ms ease;
   cursor: pointer;
 }
 ```
@@ -113,17 +113,10 @@
 
 ```css
 .card {
-  background: #F8FAFC;
+  background: #FFFFFF;
+  border: 1px solid #B07086;
   border-radius: 12px;
-  padding: 24px;
-  box-shadow: var(--shadow-md);
-  transition: all 200ms ease;
-  cursor: pointer;
-}
-
-.card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
+  padding: 16px;
 }
 ```
 
@@ -132,16 +125,17 @@
 ```css
 .input {
   padding: 12px 16px;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #B07086;
   border-radius: 8px;
   font-size: 16px;
-  transition: border-color 200ms ease;
+  min-height: 48px;
+  transition: border-color 150ms ease;
 }
 
 .input:focus {
-  border-color: #2563EB;
+  border-color: #5F2357;
   outline: none;
-  box-shadow: 0 0 0 3px #2563EB20;
+  box-shadow: 0 0 0 3px #5F235733;
 }
 ```
 
@@ -177,11 +171,11 @@
 
 ### Page Pattern
 
-**Pattern Name:** Hero + Features + CTA
+**Pattern Name:** Phone-first utility (tabs + forms)
 
-- **Conversion Strategy:** Deep CTA placement. For CTA label text, verify at least 4.5:1 against the button fill; use 7:1 only when the product explicitly targets AAA normal-text contrast. Keep focus and component boundaries independently visible. Disable hero parallax under reduced motion and render its static final state.
-- **CTA Placement:** Hero (sticky) + Bottom
-- **Section Order:** Hero with headline/image > Value prop > Key features (3-5) > CTA section > Footer
+- One primary CTA per screen. Bottom tabs ≤4. Content width max 560px, 24px gutters.
+- Lockup on login and splash mark; in-app chrome uses plum tokens, not a repeated wordmark in every header.
+- CTA Placement: in-flow primary button (not a marketing sticky hero).
 
 ---
 
@@ -210,8 +204,10 @@ gsap.from(el, { opacity: 0, y: 12, duration: 0.35, ease: 'power1.out', scrollTri
 - ❌ **Missing cursor:pointer** — All clickable elements must have cursor:pointer
 - ❌ **Layout-shifting hovers** — Avoid scale transforms that shift layout
 - ❌ **Low contrast text** — Maintain 4.5:1 minimum contrast ratio
+- ❌ **Sun yellow as body or button text** — Use plum; yellow stays in the official mark only
 - ❌ **Instant state changes** — Always use transitions (150-300ms)
 - ❌ **Invisible focus states** — Focus states must be visible for a11y
+- ❌ **Recoloring or stretching the lockup** — Use `assets/images/logo-caminho-do-bem.png` with contain fit
 
 ---
 

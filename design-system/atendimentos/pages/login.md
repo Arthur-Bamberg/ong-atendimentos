@@ -6,9 +6,10 @@
 ## Page-Specific Rules
 
 ### Layout
-- Phone-first, max content width 560px, 24px gutters.
-- One primary CTA: Entrar (primary blue `#2563EB` / on-primary `#FFFFFF` for 4.5:1+).
-- Do not use accent orange as button fill with white text (fails contrast).
+- Phone-first, max content width 560px, 24px gutters. No stack header — the lockup is the brand hero, with top+bottom safe area.
+- Official lockup (`logo-caminho-do-bem.png`) above the title; `accessibilityLabel` = Caminho do bem OSC. Do not recolor.
+- One primary CTA: Entrar (plum `#5F2357` / on-primary `#FFFFFF`, depth edge `#3A1A36` — not sun yellow).
+- Do not use sun yellow as button fill or small text (fails contrast on white).
 - Base local notice is a card with icon + text (color is not the only cue).
 
 ### Forms

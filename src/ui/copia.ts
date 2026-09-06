@@ -1,5 +1,6 @@
 export const copia = {
   app: 'Atendimentos',
+  marca: 'Caminho do bem OSC',
   carregando: 'Abrindo a Base local neste aparelho…',
   loginTitulo: 'Entrar',
   identificacao: 'Identificação',
@@ -62,8 +63,6 @@ export const copia = {
   observacaoProgramasSociais: 'Observação',
   podeParticiparProgramasSociais: 'Pode participar de programas sociais',
   dataDoAtendimento: 'Data do atendimento',
-  informativoIdentificacao:
-    'Falta de identificação única distorce qualquer leitura como se fosse “pessoas”. Vários Atendimentos da mesma pessoa — com ou sem CPF — também distorcem essa leitura.',
   naoInformado: 'Não informado',
   graficosTitulo: 'Gráficos',
   graficosAba: 'Gráficos',

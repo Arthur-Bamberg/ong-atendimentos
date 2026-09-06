@@ -3,8 +3,11 @@ import { useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet } from 'react-native'
 
 import { ThemedView } from '@/components/themed-view'
+import { Spacing } from '@/constants/theme'
 import { useTheme } from '@/hooks/use-theme'
 import { useBaseLocal } from '@/ui/base-local-provider'
+import { copia } from '@/ui/copia'
+import { LogoMarca } from '@/ui/marca'
 
 export default function PortaDeEntrada() {
   const theme = useTheme()
@@ -33,7 +36,12 @@ export default function PortaDeEntrada() {
   if (!destino) {
     return (
       <ThemedView style={styles.centralizado}>
-        <ActivityIndicator color={theme.primary} />
+        <LogoMarca compact />
+        <ActivityIndicator
+          accessibilityLabel={copia.carregando}
+          color={theme.primary}
+          style={styles.espera}
+        />
       </ThemedView>
     )
   }
@@ -46,5 +54,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: Spacing.lg,
+  },
+  espera: {
+    marginTop: Spacing.md,
   },
 })

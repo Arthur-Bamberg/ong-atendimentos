@@ -29,6 +29,10 @@ export function Tela({ children, edges = ['bottom'] }: { children: ReactNode; ed
   )
 }
 
+export function Grupo({ children }: { children: ReactNode }) {
+  return <View style={styles.grupo}>{children}</View>
+}
+
 export function BotaoPrincipal({
   rotulo,
   disabled,
@@ -49,6 +53,7 @@ export function BotaoPrincipal({
         Platform.OS === 'web' ? styles.clicavelWeb : null,
         {
           backgroundColor: theme.primary,
+          borderBottomColor: theme.foreground,
           minHeight: MinTouch,
           opacity: inativo ? 0.5 : pressed ? 0.88 : 1,
         },
@@ -84,6 +89,47 @@ export function BotaoSecundario({ rotulo, ...rest }: PressableProps & { rotulo: 
   )
 }
 
+export function BotaoContorno({
+  rotulo,
+  disabled,
+  ocupado,
+  tom = 'primary',
+  style,
+  ...rest
+}: PressableProps & {
+  rotulo: string
+  ocupado?: boolean
+  tom?: 'primary' | 'destructive'
+}) {
+  const theme = useTheme()
+  const inativo = Boolean(disabled || ocupado)
+  const fundo = tom === 'destructive' ? theme.destructive : theme.primary
+  const letra = tom === 'destructive' ? theme.onDestructive : theme.onPrimary
+
+  return (
+    <Pressable
+      {...rest}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: inativo, busy: Boolean(ocupado) }}
+      disabled={inativo}
+      style={(estado) => [
+        styles.botaoContorno,
+        Platform.OS === 'web' ? styles.clicavelWeb : null,
+        {
+          backgroundColor: fundo,
+          minHeight: MinTouch,
+          opacity: inativo ? 0.5 : estado.pressed ? 0.88 : 1,
+        },
+        typeof style === 'function' ? style(estado) : style,
+      ]}
+    >
+      <ThemedText style={[styles.rotuloBotao, { color: letra }]}>
+        {ocupado ? `${rotulo}…` : rotulo}
+      </ThemedText>
+    </Pressable>
+  )
+}
+
 export function LinhaPressionavel({
   children,
   selecionada,
@@ -101,13 +147,24 @@ export function LinhaPressionavel({
         Platform.OS === 'web' ? styles.clicavelWeb : null,
         {
           borderColor: selecionada ? theme.primary : theme.border,
-          backgroundColor: theme.card,
+          backgroundColor: selecionada ? theme.muted : theme.card,
           minHeight: MinTouch,
           opacity: pressed ? 0.88 : 1,
         },
       ]}
     >
-      {children}
+      <View style={styles.linhaMiolo}>
+        {selecionada ? (
+          <Ionicons
+            accessibilityElementsHidden
+            color={theme.primary}
+            importantForAccessibility="no"
+            name="checkmark-circle"
+            size={22}
+          />
+        ) : null}
+        <View style={styles.linhaConteudo}>{children}</View>
+      </View>
     </Pressable>
   )
 }
@@ -128,7 +185,7 @@ export function Aviso({
   return (
     <ThemedView
       surface="muted"
-      style={[styles.aviso, { borderColor: theme.border, borderLeftColor: theme.primary }]}
+      style={[styles.aviso, { borderColor: theme.border }]}
       accessibilityRole="text"
     >
       <Ionicons
@@ -153,7 +210,7 @@ export function CampoTexto({
   const [foco, setFoco] = useState(false)
 
   return (
-    <>
+    <Grupo>
       <ThemedText type="label">{rotulo}</ThemedText>
       <TextInput
         {...rest}
@@ -179,7 +236,7 @@ export function CampoTexto({
           rest.style,
         ]}
       />
-    </>
+    </Grupo>
   )
 }
 
@@ -195,7 +252,7 @@ export function EscolhaFechada<T extends string>({
   onChange: (valor: T | '') => void
 }) {
   return (
-    <>
+    <Grupo>
       <ThemedText type="label">{rotulo}</ThemedText>
       {opcoes.map((opcao) => (
         <LinhaPressionavel
@@ -207,7 +264,7 @@ export function EscolhaFechada<T extends string>({
           <ThemedText>{opcao}</ThemedText>
         </LinhaPressionavel>
       ))}
-    </>
+    </Grupo>
   )
 }
 
@@ -223,7 +280,7 @@ export function EscolhaMultipla<T extends string>({
   onChange: (valores: T[]) => void
 }) {
   return (
-    <>
+    <Grupo>
       <ThemedText type="label">{rotulo}</ThemedText>
       {opcoes.map((opcao) => {
         const selecionada = valores.includes(opcao)
@@ -246,7 +303,7 @@ export function EscolhaMultipla<T extends string>({
           </LinhaPressionavel>
         )
       })}
-    </>
+    </Grupo>
   )
 }
 
@@ -288,8 +345,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     gap: Spacing.md,
   },
+  grupo: {
+    gap: Spacing.sm,
+  },
   botao: {
-    borderRadius: Radius.sm,
+    borderRadius: Radius.md,
+    borderBottomWidth: 3,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: Spacing.md,
@@ -307,10 +368,25 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     justifyContent: 'center',
   },
+  botaoContorno: {
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.md,
+  },
   linha: {
     padding: Spacing.md,
     borderRadius: Radius.md,
     borderWidth: 1,
+    justifyContent: 'center',
+  },
+  linhaMiolo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  linhaConteudo: {
+    flex: 1,
     gap: Spacing.xs,
     justifyContent: 'center',
   },
@@ -321,7 +397,6 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     borderRadius: Radius.md,
     borderWidth: 1,
-    borderLeftWidth: 4,
   },
   avisoTexto: {
     flex: 1,
